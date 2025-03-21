@@ -5,7 +5,6 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import ElevationService, { ElevationData } from './services/ElevationService';
 import ContourService, { ContourLine } from './services/ContourService';
 import GridService, { GridCell } from './services/GridService';
-import RenderService from './services/RenderService';
 import ExportService from './services/ExportService';
 import { Bounds, GridType } from './types';
 import './App.css';

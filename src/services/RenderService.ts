@@ -85,7 +85,7 @@ class RenderService {
     
     // Draw scale bar if requested
     if (mergedOptions.showScaleBar) {
-      this.drawScaleBar(contextInfo, mergedOptions);
+      this.drawScaleBar(contextInfo);
     }
   }
 
@@ -285,11 +285,9 @@ class RenderService {
   /**
    * Draw a scale bar
    * @param contextInfo Canvas context info
-   * @param options Render options
    */
   private drawScaleBar(
-    contextInfo: CanvasContextInfo,
-    options: RenderOptions
+    contextInfo: CanvasContextInfo
   ): void {
     const { context: ctx, bounds, width, height } = contextInfo;
     const { north, south, east, west } = bounds;
@@ -351,10 +349,9 @@ class RenderService {
   /**
    * Export the canvas to a PNG blob
    * @param canvas The canvas element
-   * @param dpi The resolution in dots per inch (default: 300)
    * @returns Promise resolving to a PNG blob
    */
-  async exportToPNG(canvas: HTMLCanvasElement, dpi: number = 300): Promise<Blob> {
+  async exportToPNG(canvas: HTMLCanvasElement): Promise<Blob> {
     return new Promise((resolve, reject) => {
       try {
         canvas.toBlob(blob => {

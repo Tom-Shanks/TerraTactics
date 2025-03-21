@@ -28,14 +28,26 @@ class ElevationService {
       }
     } catch (error) {
       console.error('Error fetching elevation data:', error);
-      // Try fallback sources
-      if (source !== ElevationDataSource.AWS_TERRAIN) {
-        console.log('Trying AWS Terrain Tiles as fallback...');
-        return await this.fetchFromAWSTerrain(bounds);
-      } else if (source !== ElevationDataSource.USGS) {
-        console.log('Trying USGS as fallback...');
-        return await this.fetchFromUSGS(bounds);
+      // Try fallback sources in a specific order
+      try {
+        if (source !== ElevationDataSource.AWS_TERRAIN) {
+          console.log('Trying AWS Terrain Tiles as fallback...');
+          return await this.fetchFromAWSTerrain(bounds);
+        }
+      } catch (e) {
+        // Continue to next fallback
       }
+      
+      try {
+        if (source !== ElevationDataSource.USGS) {
+          console.log('Trying USGS as fallback...');
+          return await this.fetchFromUSGS(bounds);
+        }
+      } catch (e) {
+        // Continue to next fallback
+      }
+      
+      // If we reach here, all attempts failed
       throw new Error('Failed to fetch elevation data from all available sources');
     }
   }
@@ -124,7 +136,6 @@ class ElevationService {
       
       // Extract georeferencing information
       const fileDirectory = image.getFileDirectory();
-      const geoKeys = image.getGeoKeys();
       const pixelWidth = fileDirectory.ModelPixelScale[0];
       const pixelHeight = fileDirectory.ModelPixelScale[1];
       

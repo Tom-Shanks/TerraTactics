@@ -60,7 +60,7 @@ class ContourService {
       .size([elevationData.width, elevationData.height])
       .thresholds(thresholds);
     
-    const contours = contourGenerator(elevationData.data as unknown as number[][]);
+    const contours = contourGenerator(elevationData.data as unknown as number[]);
     
     // Convert the contours to the format we want
     return contours.map((contour: any) => {

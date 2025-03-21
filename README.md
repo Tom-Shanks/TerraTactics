@@ -31,10 +31,10 @@ A web-based tool that allows tabletop gamers to select real-world locations, ext
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/terrain-map-generator.git
+git clone https://github.com/Tom-Shanks/TerraTactics.git
 
 # Navigate to the project directory
-cd terrain-map-generator
+cd TerraTactics
 
 # Install dependencies
 npm install
@@ -52,6 +52,14 @@ npm run build
 # Preview the production build
 npm run preview
 ```
+
+## Deployment
+
+The application is configured for easy deployment to Vercel:
+
+1. Fork or clone this repository
+2. Connect it to your Vercel account
+3. Deploy with default settings (the vercel.json file handles the configuration)
 
 ## Technologies Used
 
