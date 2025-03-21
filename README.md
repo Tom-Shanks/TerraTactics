@@ -1,24 +1,38 @@
-# Tabletop Terrain Map Generator
+# TerraTactics - Tabletop Terrain Map Generator
 
-A web-based tool that allows tabletop gamers to select real-world locations, extract elevation data, generate topographic maps with contour lines, overlay game-specific grids (hexes or squares), and export print-ready maps for tabletop gaming.
+A web application for generating realistic terrain maps for tabletop gaming from real-world locations.
 
 ## Features
 
-- Select real-world locations using an interactive map
-- Extract elevation data from multiple open sources
-- Generate contour lines with adjustable intervals
-- Overlay game-specific grids (hex or square)
-- Export high-quality print-ready PDF or PNG files
-- Works entirely client-side with no API keys required
-- Supports common tabletop gaming scales (D&D, Warhammer, etc.)
+- Select any location on Earth using an interactive map
+- Generate accurate elevation data
+- Create contour lines with adjustable intervals
+- Add hex or square grids sized for popular game systems
+- Export maps as high-quality PDF or PNG
 
-## How to Use
+## Recent Updates
 
-1. **Select Map Area**: Use the rectangle tool on the map to select the area you want to use for your tabletop game.
-2. **Generate Elevation Data**: The application will fetch elevation data from open sources like USGS, OpenTopography, or AWS Terrain Tiles.
-3. **Configure Contours**: Adjust contour intervals and styling to match your desired terrain features.
-4. **Apply Grid**: Choose a grid type (hex or square) and configure it for your specific game system.
-5. **Export**: Generate a high-resolution PDF or PNG file ready for printing.
+- Fixed map initialization issues
+- Added responsive design for mobile and desktop
+- Improved drawing tools functionality
+- Enhanced error handling
+- Merged all branches to ensure consistency
+
+## Getting Started
+
+1. Visit the application at [TerraTactics](https://terratactics.vercel.app/)
+2. Select "Start Creating Maps" to begin
+3. Use the rectangle tool to select an area on the map
+4. Generate elevation data and customize contour intervals
+5. Add a grid overlay and export your map
+
+## Technical Details
+
+This application is built with:
+- React
+- TypeScript
+- Leaflet for mapping
+- Vercel for hosting
 
 ## Development
 
