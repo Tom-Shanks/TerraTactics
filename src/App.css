@@ -323,16 +323,18 @@ header button {
 .map-container {
   margin-bottom: 1.5rem;
   width: 100%;
+  height: 400px;
 }
 
 @media (min-width: 768px) {
   .map-container {
     margin-bottom: 2rem;
+    height: 600px;
   }
 }
 
 .map {
-  height: 300px;
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -501,8 +503,15 @@ footer {
 
 /* Leaflet Specific Styles */
 .leaflet-container {
-  height: 100%;
-  width: 100%;
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+}
+
+/* Make sure the Leaflet draw toolbar is visible */
+.leaflet-draw.leaflet-control {
+  display: block !important;
+  z-index: 1000;
 }
 
 .leaflet-draw-toolbar a {

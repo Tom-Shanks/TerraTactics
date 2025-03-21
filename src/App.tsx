@@ -88,9 +88,17 @@ function App() {
 
   // Handle area selection from the map
   const handleAreaSelected = useCallback((bounds: L.LatLngBounds) => {
+    console.log('Area selected:', bounds);
     if (bounds.isValid() && bounds.getNorth() !== 0) {
+      console.log('Setting valid bounds:', {
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest()
+      });
       setSelectedArea(bounds);
     } else {
+      console.log('Invalid bounds received, clearing selection');
       setSelectedArea(null);
     }
   }, []);

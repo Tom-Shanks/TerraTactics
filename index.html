@@ -6,6 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Generate contour maps for tabletop gaming from real-world terrain data" />
     <title>Tabletop Terrain Map Generator</title>
+    <!-- Ensure Leaflet and Leaflet Draw styles are loaded -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <style>
+      /* Fix any CSS issues with Leaflet in production */
+      .map-container {
+        position: relative !important;
+        height: 500px !important;
+      }
+      .leaflet-container {
+        height: 100% !important;
+        width: 100% !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
