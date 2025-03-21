@@ -30,7 +30,7 @@ class ElevationService {
       console.error('Error fetching elevation data:', error);
       // Try fallback sources in a specific order
       try {
-        if (source !== ElevationDataSource.AWS_TERRAIN) {
+        if (source.toString() !== ElevationDataSource.AWS_TERRAIN.toString()) {
           console.log('Trying AWS Terrain Tiles as fallback...');
           return await this.fetchFromAWSTerrain(bounds);
         }
@@ -39,7 +39,7 @@ class ElevationService {
       }
       
       try {
-        if (source !== ElevationDataSource.USGS) {
+        if (source.toString() !== ElevationDataSource.USGS.toString()) {
           console.log('Trying USGS as fallback...');
           return await this.fetchFromUSGS(bounds);
         }
