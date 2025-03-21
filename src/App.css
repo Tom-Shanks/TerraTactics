@@ -1,8 +1,14 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  #root {
+    padding: 2rem;
+  }
 }
 
 .logo {
@@ -45,54 +51,94 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Landing Page Styles */
 .landing-page {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .hero {
   text-align: center;
-  padding: 3rem 1rem;
-  margin-bottom: 2rem;
+  padding: 2rem 1rem;
+  margin-bottom: 1.5rem;
   background: linear-gradient(135deg, #4a5568 0%, #1a202c 100%);
   color: white;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+@media (min-width: 768px) {
+  .hero {
+    padding: 3rem 1rem;
+    margin-bottom: 2rem;
+  }
+}
+
 .hero h1 {
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+}
+
 .hero h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
   font-weight: 500;
   opacity: 0.9;
 }
 
+@media (min-width: 768px) {
+  .hero h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .hero p {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   max-width: 700px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.5rem;
   opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+  .hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .cta-button {
   background-color: #48bb78;
   color: white;
   border: none;
-  padding: 12px 24px;
-  font-size: 1.1rem;
+  padding: 10px 20px;
+  font-size: 1rem;
   font-weight: 600;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: auto;
+  display: inline-block;
+}
+
+@media (min-width: 768px) {
+  .cta-button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+  }
 }
 
 .cta-button:hover {
@@ -104,8 +150,15 @@
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .features {
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
 }
 
 .feature {
@@ -114,6 +167,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
+  text-align: left;
 }
 
 .feature:hover {
@@ -122,38 +176,81 @@
 }
 
 .feature h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
   color: #2d3748;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .feature h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .feature p {
   color: #4a5568;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .feature p {
+    font-size: 1rem;
+  }
 }
 
 .getting-started {
   background: #f7fafc;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 8px;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   text-align: left;
+}
+
+@media (min-width: 768px) {
+  .getting-started {
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
 }
 
 .getting-started h2 {
   text-align: center;
   margin-bottom: 1.5rem;
-  font-size: 2rem;
+  font-size: 1.75rem;
   color: #2d3748;
 }
 
+@media (min-width: 768px) {
+  .getting-started h2 {
+    font-size: 2rem;
+  }
+}
+
 .getting-started ol {
-  padding-left: 2rem;
-  margin-bottom: 2rem;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .getting-started ol {
+    padding-left: 2rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .getting-started li {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .getting-started li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
 }
 
 .getting-started button {
@@ -167,79 +264,148 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: auto;
 }
 
 .getting-started button:hover {
   background-color: #3182ce;
 }
 
-/* Existing App Styles (modified) */
+/* Generator App Styles */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    flex-wrap: nowrap;
+  }
 }
 
 header h1 {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #2d3748;
+  margin: 0;
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  header h1 {
+    font-size: 1.8rem;
+  }
+}
+
+header button {
+  width: auto;
+  padding: 0.5rem 1rem;
   margin: 0;
 }
 
 .map-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .map-container {
+    margin-bottom: 2rem;
+  }
 }
 
 .map {
-  height: 500px;
+  height: 300px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .map {
+    height: 500px;
+  }
 }
 
 .instructions {
   background-color: #edf2f7;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .instructions {
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
 }
 
 .controls-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .controls-container {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .control-section {
   background-color: white;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+@media (min-width: 768px) {
+  .control-section {
+    padding: 1.5rem;
+  }
+}
+
 .control-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
   color: #2d3748;
   text-align: center;
 }
 
+@media (min-width: 768px) {
+  .control-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .form-group {
   margin-bottom: 1rem;
+  text-align: left;
 }
 
 .form-group label {
@@ -282,8 +448,15 @@ button:disabled {
 
 .export-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .export-buttons {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
 }
 
 .success-message {
@@ -295,38 +468,45 @@ button:disabled {
 .error-message {
   background-color: #fff5f5;
   color: #e53e3e;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
   margin-top: 1rem;
   text-align: center;
   border-left: 4px solid #e53e3e;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .error-message {
+    padding: 1rem;
+    font-size: 1rem;
+  }
 }
 
 footer {
   margin-top: auto;
-  padding-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid #e2e8f0;
   color: #718096;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
-@media (max-width: 768px) {
-  .controls-container {
-    grid-template-columns: 1fr;
+@media (min-width: 768px) {
+  footer {
+    padding-top: 2rem;
+    font-size: 0.9rem;
   }
+}
 
-  header h1 {
-    font-size: 1.5rem;
-  }
-
-  .map {
-    height: 300px;
-  }
+/* Leaflet Specific Styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
 }
 
 .leaflet-draw-toolbar a {
-  background-size: 300px 30px;
+  background-size: 300px 30px !important;
 }
 
 .leaflet-touch .leaflet-control-layers, 
@@ -334,26 +514,51 @@ footer {
   border: 2px solid rgba(0,0,0,0.2);
 }
 
+.leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-rectangle {
+  background-position: -2px -2px;
+}
+
+/* Selected Area Info */
 .selected-bounds-info {
   background-color: #f7fafc;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   text-align: left;
+}
+
+@media (min-width: 768px) {
+  .selected-bounds-info {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .selected-bounds-info h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #2d3748;
 }
 
+@media (min-width: 768px) {
+  .selected-bounds-info h3 {
+    font-size: 1.2rem;
+  }
+}
+
 .selected-bounds-info p {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
   color: #4a5568;
   word-break: break-all;
+}
+
+@media (min-width: 768px) {
+  .selected-bounds-info p {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 .selected-bounds-info button {

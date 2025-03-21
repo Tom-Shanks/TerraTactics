@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -8,6 +8,21 @@ import GridService, { GridCell } from './services/GridService';
 import ExportService from './services/ExportService';
 import { Bounds, GridType } from './types';
 import './App.css';
+
+// This ensures the Leaflet icons work correctly
+import { Icon } from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix Leaflet's default icon issue
+let DefaultIcon = Icon.Default.prototype;
+DefaultIcon.options.iconUrl = icon;
+DefaultIcon.options.shadowUrl = iconShadow;
+Icon.Default.mergeOptions({
+  iconRetinaUrl: icon,
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+});
 
 function App() {
   // State for app views
@@ -19,6 +34,7 @@ function App() {
   const [gridData, setGridData] = useState<GridCell[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapIsInitialized, setMapIsInitialized] = useState<boolean>(false);
 
   // Form state
   const [contourInterval, setContourInterval] = useState<number>(10);
@@ -27,6 +43,7 @@ function App() {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
+  const drawnItems = useRef<L.FeatureGroup | null>(null);
 
   // Landing page view
   const renderLandingPage = () => {
@@ -36,7 +53,7 @@ function App() {
           <h1>TerraTactics</h1>
           <h2>Tabletop Terrain Map Generator</h2>
           <p>Create realistic topographic maps for your tabletop gaming from real-world locations</p>
-          <button className="cta-button" onClick={() => setAppView('generator')}>
+          <button className="cta-button" onClick={() => handleViewChange('generator')}>
             Start Creating Maps
           </button>
         </div>
@@ -68,7 +85,7 @@ function App() {
             <li>Add a grid overlay sized for your game system</li>
             <li>Export your map for printing or digital use</li>
           </ol>
-          <button onClick={() => setAppView('generator')}>
+          <button onClick={() => handleViewChange('generator')}>
             Get Started Now
           </button>
         </div>
@@ -76,14 +93,27 @@ function App() {
     );
   };
 
-  // Generator view (existing app functionality)
+  // Change view handler with cleanup
+  const handleViewChange = useCallback((view: 'landing' | 'generator') => {
+    // Clean up the previous view as needed
+    if (view === 'landing' && mapInstance.current) {
+      mapInstance.current.remove();
+      mapInstance.current = null;
+      drawnItems.current = null;
+      setMapIsInitialized(false);
+    }
+    
+    setAppView(view);
+  }, []);
+
+  // Generator view
   const renderGenerator = () => {
     // Original app content
     return (
       <div className="app-container">
         <header>
           <h1>Tabletop Terrain Map Generator</h1>
-          <button onClick={() => setAppView('landing')}>Back to Home</button>
+          <button onClick={() => handleViewChange('landing')}>Back to Home</button>
         </header>
         
         <div className="map-container">
@@ -93,7 +123,7 @@ function App() {
           </div>
         </div>
         
-        {/* Rest of the existing UI */}
+        {/* Controls UI */}
         <div className="controls-container">
           {selectedArea && (
             <div className="selected-bounds-info">
@@ -188,60 +218,127 @@ function App() {
   
   // Initialize map with Leaflet
   useEffect(() => {
-    if (appView === 'generator' && mapRef.current && !mapInstance.current) {
-      // Initialize the map
-      mapInstance.current = L.map(mapRef.current).setView([37.7749, -122.4194], 13);
+    if (appView === 'generator' && mapRef.current && !mapIsInitialized) {
+      // Clean up any existing map instance first
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+        drawnItems.current = null;
+      }
+      
+      // Initialize the map with a short delay to ensure DOM is ready
+      const initTimer = setTimeout(() => {
+        try {
+          if (!mapRef.current || mapInstance.current) return;
+          
+          // Create a new map instance
+          const map = L.map(mapRef.current).setView([37.7749, -122.4194], 13);
+          mapInstance.current = map;
 
-      // Add the tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(mapInstance.current);
+          // Add the tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
 
-      // Add draw control
-      const drawControl = new L.Control.Draw({
-        draw: {
-          polyline: false,
-          polygon: false,
-          circle: false,
-          marker: false,
-          circlemarker: false,
-          rectangle: {
-            shapeOptions: {
-              color: '#3388ff',
-              weight: 2
+          // Initialize the drawn items layer
+          drawnItems.current = new L.FeatureGroup();
+          map.addLayer(drawnItems.current);
+
+          // Add draw control
+          const drawControl = new L.Control.Draw({
+            edit: {
+              featureGroup: drawnItems.current,
+            },
+            draw: {
+              polyline: false,
+              polygon: false,
+              circle: false,
+              marker: false,
+              circlemarker: false,
+              rectangle: {
+                shapeOptions: {
+                  color: '#3388ff',
+                  weight: 2
+                }
+              }
             }
-          }
-        }
-      });
-      mapInstance.current.addControl(drawControl);
+          });
+          map.addControl(drawControl);
 
-      // Event handler for when a shape is drawn
-      mapInstance.current.on(L.Draw.Event.CREATED, (event: any) => {
-        const layer = event.layer;
-        setSelectedArea(layer.getBounds());
-        
-        // Clear any existing rectangle layers
-        if (mapInstance.current) {
-          mapInstance.current.eachLayer((l: any) => {
-            if (l instanceof L.Rectangle && l !== layer) {
-              mapInstance.current?.removeLayer(l);
+          // Event handler for when a shape is drawn
+          map.on(L.Draw.Event.CREATED, (event: any) => {
+            const layer = event.layer;
+            setSelectedArea(layer.getBounds());
+            
+            // Clear any existing drawings
+            if (drawnItems.current) {
+              drawnItems.current.clearLayers();
+              drawnItems.current.addLayer(layer);
             }
           });
           
-          // Add the new rectangle layer
-          layer.addTo(mapInstance.current);
+          // Handle edit events
+          map.on(L.Draw.Event.EDITED, (event: any) => {
+            const layers = event.layers;
+            let newBounds = null;
+            
+            layers.eachLayer((layer: any) => {
+              newBounds = layer.getBounds();
+            });
+            
+            if (newBounds) {
+              setSelectedArea(newBounds);
+            }
+          });
+          
+          // Handle delete events
+          map.on(L.Draw.Event.DELETED, () => {
+            setSelectedArea(null);
+          });
+          
+          // Invalidate map size after rendering
+          const resizeTimer = setTimeout(() => {
+            map.invalidateSize();
+          }, 100);
+          
+          setMapIsInitialized(true);
+          
+          return () => clearTimeout(resizeTimer);
+        } catch (error) {
+          console.error("Error initializing map:", error);
+          setError(`Failed to initialize map: ${error instanceof Error ? error.message : String(error)}`);
         }
-      });
+      }, 100);
+      
+      // Cleanup function for the initialization timer
+      return () => clearTimeout(initTimer);
     }
+  }, [appView, mapIsInitialized]);
 
-    // Cleanup function
+  // Add a window resize handler to ensure the map stays responsive
+  useEffect(() => {
+    const handleResize = () => {
+      if (mapInstance.current) {
+        mapInstance.current.invalidateSize();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Clean up when component unmounts
+  useEffect(() => {
     return () => {
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
       }
     };
-  }, [appView]);
+  }, []);
 
   const handleGenerateElevationData = async () => {
     if (!selectedArea) return;
