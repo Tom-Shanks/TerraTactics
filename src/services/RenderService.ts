@@ -353,6 +353,9 @@ class RenderService {
    * @returns Promise resolving to a PNG blob
    */
   async exportToPNG(canvas: HTMLCanvasElement, dpi?: number): Promise<Blob> {
+    // Silence the unused parameter warning
+    void dpi;
+    
     return new Promise((resolve, reject) => {
       try {
         canvas.toBlob(blob => {
