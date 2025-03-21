@@ -235,6 +235,8 @@ function App() {
         try {
           if (!mapRef.current || mapInstance.current) return;
           
+          console.log("Initializing map...");
+          
           // Create a new map instance
           const map = L.map(mapRef.current).setView([37.7749, -122.4194], 13);
           mapInstance.current = map;
@@ -248,24 +250,21 @@ function App() {
           drawnItems.current = new L.FeatureGroup();
           map.addLayer(drawnItems.current);
 
-          // Make sure Leaflet Draw exists
-          if (!L.Control || !L.Control.Draw) {
-            console.error("Leaflet Draw plugin not available");
-            throw new Error("Leaflet Draw plugin not available");
-          }
-
-          // Add draw control
+          console.log("Map and layers initialized, setting up Draw control...");
+          console.log("L.Control exists:", !!L.Control);
+          console.log("L.Draw exists:", !!(L as any).Draw);
+          
+          // Create a simplified draw control
           try {
-            // Create draw control explicitly using the Draw variable we defined
-            const drawControl = new L.Control.Draw({
-              edit: {
-                featureGroup: drawnItems.current,
-              },
+            // Create the options for the draw control
+            const drawOptions = {
+              position: 'topleft',
               draw: {
+                // disable all drawing tools except rectangle
                 polyline: false,
                 polygon: false,
-                circle: false,
                 marker: false,
+                circle: false,
                 circlemarker: false,
                 rectangle: {
                   shapeOptions: {
@@ -273,16 +272,36 @@ function App() {
                     weight: 2
                   }
                 }
+              },
+              edit: {
+                featureGroup: drawnItems.current,
+                remove: true
               }
-            });
+            };
+
+            // Add the draw control using the dynamic approach
+            const DrawControl = (L.Control as any).Draw;
+            if (!DrawControl) {
+              throw new Error("L.Control.Draw not available");
+            }
+            
+            console.log("Creating draw control...");
+            const drawControl = new DrawControl(drawOptions);
             map.addControl(drawControl);
+            console.log("Draw control added successfully");
+
           } catch (drawError) {
             console.error("Error initializing draw control:", drawError);
-            throw drawError;
+            setError(`Failed to initialize draw control: ${drawError instanceof Error ? drawError.message : String(drawError)}`);
+            return;
           }
 
+          // Setup event handlers
+          console.log("Setting up event handlers...");
+          
           // Event handler for when a shape is drawn
-          map.on(L.Draw.Event.CREATED, (event: any) => {
+          map.on('draw:created', (event: any) => {
+            console.log("Draw:created event triggered");
             const layer = event.layer;
             setSelectedArea(layer.getBounds());
             
@@ -294,7 +313,8 @@ function App() {
           });
           
           // Handle edit events
-          map.on(L.Draw.Event.EDITED, (event: any) => {
+          map.on('draw:edited', (event: any) => {
+            console.log("Draw:edited event triggered");
             const layers = event.layers;
             let newBounds = null;
             
@@ -308,13 +328,15 @@ function App() {
           });
           
           // Handle delete events
-          map.on(L.Draw.Event.DELETED, () => {
+          map.on('draw:deleted', () => {
+            console.log("Draw:deleted event triggered");
             setSelectedArea(null);
           });
           
           // Invalidate map size after rendering
           const resizeTimer = setTimeout(() => {
             map.invalidateSize();
+            console.log("Map initialization complete");
           }, 100);
           
           setMapIsInitialized(true);
@@ -324,7 +346,7 @@ function App() {
           console.error("Error initializing map:", error);
           setError(`Failed to initialize map: ${error instanceof Error ? error.message : String(error)}`);
         }
-      }, 100);
+      }, 250); // Increased timeout to ensure DOM is fully ready
       
       // Cleanup function for the initialization timer
       return () => clearTimeout(initTimer);
