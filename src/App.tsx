@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 // Import Leaflet Draw
-import './utils/leaflet-draw-setup';
+import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
+// Import our custom Leaflet Draw setup
+import './utils/leaflet-draw-setup';
 import ElevationService, { ElevationData } from './services/ElevationService';
 import ContourService, { ContourLine } from './services/ContourService';
 import GridService, { GridCell } from './services/GridService';
