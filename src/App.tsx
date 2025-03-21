@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw';
+// Import Leaflet Draw
+import './utils/leaflet-draw-setup';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import ElevationService, { ElevationData } from './services/ElevationService';
 import ContourService, { ContourLine } from './services/ContourService';
@@ -24,21 +25,6 @@ Icon.Default.mergeOptions({
   iconUrl: icon,
   shadowUrl: iconShadow,
 });
-
-// Explicitly access the Draw control to avoid initialization issues
-const Draw = (L as any).Draw;
-
-// Initialize Leaflet Draw - this ensures the plugin is available globally
-declare global {
-  interface Window {
-    L: typeof L;
-  }
-}
-
-// Make sure L is available globally for plugins to work correctly
-if (typeof window !== 'undefined') {
-  window.L = L;
-}
 
 function App() {
   // State for app views
@@ -269,7 +255,7 @@ function App() {
           // Add draw control
           try {
             // Create draw control explicitly using the Draw variable we defined
-            const drawControl = new Draw.Control({
+            const drawControl = new L.Control.Draw({
               edit: {
                 featureGroup: drawnItems.current,
               },
@@ -294,7 +280,7 @@ function App() {
           }
 
           // Event handler for when a shape is drawn
-          map.on(Draw.Event.CREATED, (event: any) => {
+          map.on(L.Draw.Event.CREATED, (event: any) => {
             const layer = event.layer;
             setSelectedArea(layer.getBounds());
             
@@ -306,7 +292,7 @@ function App() {
           });
           
           // Handle edit events
-          map.on(Draw.Event.EDITED, (event: any) => {
+          map.on(L.Draw.Event.EDITED, (event: any) => {
             const layers = event.layers;
             let newBounds = null;
             
@@ -320,7 +306,7 @@ function App() {
           });
           
           // Handle delete events
-          map.on(Draw.Event.DELETED, () => {
+          map.on(L.Draw.Event.DELETED, () => {
             setSelectedArea(null);
           });
           
