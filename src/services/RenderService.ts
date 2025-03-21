@@ -349,9 +349,10 @@ class RenderService {
   /**
    * Export the canvas to a PNG blob
    * @param canvas The canvas element
+   * @param dpi The resolution in dots per inch (optional, not used)
    * @returns Promise resolving to a PNG blob
    */
-  async exportToPNG(canvas: HTMLCanvasElement): Promise<Blob> {
+  async exportToPNG(canvas: HTMLCanvasElement, dpi?: number): Promise<Blob> {
     return new Promise((resolve, reject) => {
       try {
         canvas.toBlob(blob => {
