@@ -1,32 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-// Import Leaflet Draw
-import 'leaflet-draw';
-import 'leaflet-draw/dist/leaflet.draw.css';
-// Import our custom Leaflet Draw setup
-import './utils/leaflet-draw-setup';
+// Import services
 import ElevationService, { ElevationData } from './services/ElevationService';
 import ContourService, { ContourLine } from './services/ContourService';
 import GridService, { GridCell } from './services/GridService';
 import ExportService from './services/ExportService';
 import { Bounds, GridType } from './types';
 import './App.css';
-
-// This ensures the Leaflet icons work correctly
-import { Icon } from 'leaflet';
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// Fix Leaflet's default icon issue
-let DefaultIcon = Icon.Default.prototype;
-DefaultIcon.options.iconUrl = icon;
-DefaultIcon.options.shadowUrl = iconShadow;
-Icon.Default.mergeOptions({
-  iconRetinaUrl: icon,
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-});
+import TerrainMap from './components/TerrainMap';
 
 function App() {
   // State for app views
@@ -38,16 +19,11 @@ function App() {
   const [gridData, setGridData] = useState<GridCell[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [mapIsInitialized, setMapIsInitialized] = useState<boolean>(false);
 
   // Form state
   const [contourInterval, setContourInterval] = useState<number>(10);
   const [gridType, setGridType] = useState<GridType>(GridType.SQUARE);
   const [gridSize, setGridSize] = useState<number>(5);
-
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const drawnItems = useRef<L.FeatureGroup | null>(null);
 
   // Landing page view
   const renderLandingPage = () => {
@@ -99,15 +75,24 @@ function App() {
 
   // Change view handler with cleanup
   const handleViewChange = useCallback((view: 'landing' | 'generator') => {
-    // Clean up the previous view as needed
-    if (view === 'landing' && mapInstance.current) {
-      mapInstance.current.remove();
-      mapInstance.current = null;
-      drawnItems.current = null;
-      setMapIsInitialized(false);
+    // Reset state when changing views
+    if (view === 'landing') {
+      setSelectedArea(null);
+      setElevationData(null);
+      setContourData(null);
+      setGridData(null);
     }
     
     setAppView(view);
+  }, []);
+
+  // Handle area selection from the map
+  const handleAreaSelected = useCallback((bounds: L.LatLngBounds) => {
+    if (bounds.isValid() && bounds.getNorth() !== 0) {
+      setSelectedArea(bounds);
+    } else {
+      setSelectedArea(null);
+    }
   }, []);
 
   // Generator view
@@ -121,7 +106,7 @@ function App() {
         </header>
         
         <div className="map-container">
-          <div ref={mapRef} className="map"></div>
+          <TerrainMap onAreaSelected={handleAreaSelected} />
           <div className="instructions">
             <p>Use the rectangle tool to select an area for your terrain map.</p>
           </div>
@@ -219,164 +204,6 @@ function App() {
       </div>
     );
   };
-  
-  // Initialize map with Leaflet
-  useEffect(() => {
-    if (appView === 'generator' && mapRef.current && !mapIsInitialized) {
-      // Clean up any existing map instance first
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-        drawnItems.current = null;
-      }
-      
-      // Initialize the map with a short delay to ensure DOM is ready
-      const initTimer = setTimeout(() => {
-        try {
-          if (!mapRef.current || mapInstance.current) return;
-          
-          console.log("Initializing map...");
-          
-          // Create a new map instance
-          const map = L.map(mapRef.current).setView([37.7749, -122.4194], 13);
-          mapInstance.current = map;
-
-          // Add the tile layer
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          }).addTo(map);
-
-          // Initialize the drawn items layer
-          drawnItems.current = new L.FeatureGroup();
-          map.addLayer(drawnItems.current);
-
-          console.log("Map and layers initialized, setting up Draw control...");
-          console.log("L.Control exists:", !!L.Control);
-          console.log("L.Draw exists:", !!(L as any).Draw);
-          
-          // Create a simplified draw control
-          try {
-            // Create the options for the draw control
-            const drawOptions = {
-              position: 'topleft',
-              draw: {
-                // disable all drawing tools except rectangle
-                polyline: false,
-                polygon: false,
-                marker: false,
-                circle: false,
-                circlemarker: false,
-                rectangle: {
-                  shapeOptions: {
-                    color: '#3388ff',
-                    weight: 2
-                  }
-                }
-              },
-              edit: {
-                featureGroup: drawnItems.current,
-                remove: true
-              }
-            };
-
-            // Add the draw control using the dynamic approach
-            const DrawControl = (L.Control as any).Draw;
-            if (!DrawControl) {
-              throw new Error("L.Control.Draw not available");
-            }
-            
-            console.log("Creating draw control...");
-            const drawControl = new DrawControl(drawOptions);
-            map.addControl(drawControl);
-            console.log("Draw control added successfully");
-
-          } catch (drawError) {
-            console.error("Error initializing draw control:", drawError);
-            setError(`Failed to initialize draw control: ${drawError instanceof Error ? drawError.message : String(drawError)}`);
-            return;
-          }
-
-          // Setup event handlers
-          console.log("Setting up event handlers...");
-          
-          // Event handler for when a shape is drawn
-          map.on('draw:created', (event: any) => {
-            console.log("Draw:created event triggered");
-            const layer = event.layer;
-            setSelectedArea(layer.getBounds());
-            
-            // Clear any existing drawings
-            if (drawnItems.current) {
-              drawnItems.current.clearLayers();
-              drawnItems.current.addLayer(layer);
-            }
-          });
-          
-          // Handle edit events
-          map.on('draw:edited', (event: any) => {
-            console.log("Draw:edited event triggered");
-            const layers = event.layers;
-            let newBounds = null;
-            
-            layers.eachLayer((layer: any) => {
-              newBounds = layer.getBounds();
-            });
-            
-            if (newBounds) {
-              setSelectedArea(newBounds);
-            }
-          });
-          
-          // Handle delete events
-          map.on('draw:deleted', () => {
-            console.log("Draw:deleted event triggered");
-            setSelectedArea(null);
-          });
-          
-          // Invalidate map size after rendering
-          const resizeTimer = setTimeout(() => {
-            map.invalidateSize();
-            console.log("Map initialization complete");
-          }, 100);
-          
-          setMapIsInitialized(true);
-          
-          return () => clearTimeout(resizeTimer);
-        } catch (error) {
-          console.error("Error initializing map:", error);
-          setError(`Failed to initialize map: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }, 250); // Increased timeout to ensure DOM is fully ready
-      
-      // Cleanup function for the initialization timer
-      return () => clearTimeout(initTimer);
-    }
-  }, [appView, mapIsInitialized]);
-
-  // Add a window resize handler to ensure the map stays responsive
-  useEffect(() => {
-    const handleResize = () => {
-      if (mapInstance.current) {
-        mapInstance.current.invalidateSize();
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Clean up when component unmounts
-  useEffect(() => {
-    return () => {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
-    };
-  }, []);
 
   const handleGenerateElevationData = async () => {
     if (!selectedArea) return;
