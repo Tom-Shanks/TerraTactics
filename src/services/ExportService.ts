@@ -93,7 +93,7 @@ class ExportService {
     );
     
     // Get the PNG blob
-    const blob = await RenderService.exportToPNG(canvas, exportOptions.dpi);
+    const blob = await RenderService.exportToPNG(canvas);
     
     // Create a download URL
     const url = URL.createObjectURL(blob);
