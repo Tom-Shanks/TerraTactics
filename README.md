@@ -1,22 +1,17 @@
 # TerraTactics - Tabletop Terrain Map Generator
 
-A web application for generating realistic terrain maps for tabletop gaming from real-world locations.
+Create realistic topographic maps for your tabletop gaming from real-world locations.
+
+## Latest Updates
+- Improved Leaflet Draw implementation using react-leaflet
+- Fixed build issues for Vercel deployment
+- Streamlined component architecture
 
 ## Features
-
-- Select any location on Earth using an interactive map
-- Generate accurate elevation data
-- Create contour lines with adjustable intervals
-- Add hex or square grids sized for popular game systems
-- Export maps as high-quality PDF or PNG
-
-## Recent Updates
-
-- Fixed map initialization issues
-- Added responsive design for mobile and desktop
-- Improved drawing tools functionality
-- Enhanced error handling
-- Merged all branches to ensure consistency
+- Select any location on Earth and extract accurate elevation data
+- Generate contour lines with adjustable intervals
+- Overlay hex or square grids sized for popular game systems
+- Export high-quality maps in print-ready formats
 
 ## Getting Started
 
