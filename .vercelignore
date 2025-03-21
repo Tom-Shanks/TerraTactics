@@ -1,0 +1,7 @@
+# Local development files
+.git
+.github
+.vscode
+*.log
+node_modules
+dist 
