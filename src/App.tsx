@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import L from 'leaflet';
 // Import services
 import ElevationService, { ElevationData } from './services/ElevationService';
