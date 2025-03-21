@@ -21,7 +21,46 @@ class GridService {
    * @param config The grid configuration
    * @returns Array of grid cells
    */
-  generateGrid(bounds: Bounds, config: GridConfig): GridCell[] {
+  generateGrid(bounds: Bounds, config: GridConfig): GridCell[];
+  
+  /**
+   * Generate a grid for the specified bounds with simplified parameters
+   * @param bounds The geographic bounds for the grid
+   * @param gridType The type of grid (hex or square)
+   * @param gridSize The size of each grid cell in mm
+   * @returns Array of grid cells
+   */
+  generateGrid(bounds: Bounds, gridType: GridType, gridSize: number): GridCell[];
+  
+  /**
+   * Generate a grid for the specified bounds
+   * @param bounds The geographic bounds for the grid
+   * @param configOrType The grid configuration or grid type
+   * @param gridSize Optional grid size in mm (used when second param is GridType)
+   * @returns Array of grid cells
+   */
+  generateGrid(
+    bounds: Bounds, 
+    configOrType: GridConfig | GridType, 
+    gridSize?: number
+  ): GridCell[] {
+    // Handle both method signatures
+    let config: GridConfig;
+    
+    if (typeof configOrType === 'string') {
+      // gridType and gridSize were provided directly
+      config = {
+        type: configOrType,
+        gridSize: gridSize || 5, // Default to 5mm if not specified
+        scaleRatio: 1,
+        showLabels: true,
+        labelCharset: 'alphanumeric'
+      };
+    } else {
+      // Full config object was provided
+      config = configOrType;
+    }
+    
     return config.type === GridType.HEX
       ? this.generateHexGrid(bounds, config)
       : this.generateSquareGrid(bounds, config);
