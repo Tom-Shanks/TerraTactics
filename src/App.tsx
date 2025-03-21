@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import ElevationService, { ElevationData } from './services/ElevationService';
 import ContourService, { ContourLine } from './services/ContourService';
@@ -23,6 +24,21 @@ Icon.Default.mergeOptions({
   iconUrl: icon,
   shadowUrl: iconShadow,
 });
+
+// Explicitly access the Draw control to avoid initialization issues
+const Draw = (L as any).Draw;
+
+// Initialize Leaflet Draw - this ensures the plugin is available globally
+declare global {
+  interface Window {
+    L: typeof L;
+  }
+}
+
+// Make sure L is available globally for plugins to work correctly
+if (typeof window !== 'undefined') {
+  window.L = L;
+}
 
 function App() {
   // State for app views
@@ -244,29 +260,41 @@ function App() {
           drawnItems.current = new L.FeatureGroup();
           map.addLayer(drawnItems.current);
 
+          // Make sure Leaflet Draw exists
+          if (!L.Control || !L.Control.Draw) {
+            console.error("Leaflet Draw plugin not available");
+            throw new Error("Leaflet Draw plugin not available");
+          }
+
           // Add draw control
-          const drawControl = new L.Control.Draw({
-            edit: {
-              featureGroup: drawnItems.current,
-            },
-            draw: {
-              polyline: false,
-              polygon: false,
-              circle: false,
-              marker: false,
-              circlemarker: false,
-              rectangle: {
-                shapeOptions: {
-                  color: '#3388ff',
-                  weight: 2
+          try {
+            // Create draw control explicitly using the Draw variable we defined
+            const drawControl = new Draw.Control({
+              edit: {
+                featureGroup: drawnItems.current,
+              },
+              draw: {
+                polyline: false,
+                polygon: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                  shapeOptions: {
+                    color: '#3388ff',
+                    weight: 2
+                  }
                 }
               }
-            }
-          });
-          map.addControl(drawControl);
+            });
+            map.addControl(drawControl);
+          } catch (drawError) {
+            console.error("Error initializing draw control:", drawError);
+            throw drawError;
+          }
 
           // Event handler for when a shape is drawn
-          map.on(L.Draw.Event.CREATED, (event: any) => {
+          map.on(Draw.Event.CREATED, (event: any) => {
             const layer = event.layer;
             setSelectedArea(layer.getBounds());
             
@@ -278,7 +306,7 @@ function App() {
           });
           
           // Handle edit events
-          map.on(L.Draw.Event.EDITED, (event: any) => {
+          map.on(Draw.Event.EDITED, (event: any) => {
             const layers = event.layers;
             let newBounds = null;
             
@@ -292,7 +320,7 @@ function App() {
           });
           
           // Handle delete events
-          map.on(L.Draw.Event.DELETED, () => {
+          map.on(Draw.Event.DELETED, () => {
             setSelectedArea(null);
           });
           
