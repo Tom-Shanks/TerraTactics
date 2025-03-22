@@ -2,64 +2,78 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/topo-icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Generate contour maps for tabletop gaming from real-world terrain data" />
     <title>Tabletop Terrain Map Generator</title>
-    <!-- Ensure Leaflet and Leaflet Draw styles are loaded -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="anonymous" />
+    
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"
+          crossorigin="anonymous" />
+    
     <style>
-      /* Fix any CSS issues with Leaflet in production */
-      .map-container {
-        position: relative !important;
-        height: 500px !important;
-        display: block !important;
+      html, body, #root {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
       }
+      
       .leaflet-container {
-        height: 100% !important;
-        width: 100% !important;
-        display: block !important;
+        height: 100%;
+        width: 100%;
       }
       
-      /* Debug outlines */
-      .map-container {
-        border: 3px solid red !important;
-      }
-      .map {
-        border: 3px solid blue !important;
-      }
-      
-      /* Fix for Leaflet Draw toolbar */
-      .leaflet-draw.leaflet-control {
-        display: block !important;
+      /* Force visibility of map and controls */
+      .leaflet-map-pane,
+      .leaflet-tile,
+      .leaflet-marker-icon,
+      .leaflet-marker-shadow,
+      .leaflet-tile-pane,
+      .leaflet-overlay-pane,
+      .leaflet-shadow-pane,
+      .leaflet-marker-pane,
+      .leaflet-popup-pane,
+      .leaflet-control-layers,
+      .leaflet-draw-toolbar,
+      .leaflet-draw-actions {
         visibility: visible !important;
-        z-index: 1000 !important;
+        display: block !important;
       }
     </style>
+    
+    <!-- Leaflet Scripts (load before React) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin="anonymous"></script>
+    
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"
+            crossorigin="anonymous"></script>
+            
+    <!-- Fix Leaflet's icon paths -->
+    <script>
+      // Force icon paths to be correct
+      window.addEventListener('DOMContentLoaded', function() {
+        if (window.L) {
+          console.log("Setting Leaflet icon paths");
+          L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          });
+        } else {
+          console.error("Leaflet is not loaded!");
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Add direct script includes for Leaflet - load before the app starts -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <script>
-      // Debug check to ensure Leaflet is available
-      window.addEventListener('load', function() {
-        console.log('Window loaded, checking Leaflet availability');
-        console.log('Leaflet available:', typeof L !== 'undefined');
-        console.log('Leaflet Draw available:', L && typeof L.drawVersion !== 'undefined');
-        
-        // Force CSS reload
-        const links = document.getElementsByTagName('link');
-        for (let i = 0; i < links.length; i++) {
-          const link = links[i];
-          if (link.rel === 'stylesheet') {
-            link.href = link.href + '?forceReload=' + new Date().getTime();
-          }
-        }
-      });
-    </script>
   </body>
 </html>

@@ -9,7 +9,7 @@ export interface Bounds {
 }
 
 /**
- * Grid types for tabletop gaming
+ * Type of grid to generate
  */
 export enum GridType {
   SQUARE = 'square',
@@ -17,13 +17,65 @@ export enum GridType {
 }
 
 /**
- * Game system presets for common tabletop games
+ * Game system presets for grid sizes
  */
 export enum GameSystem {
+  GENERIC = 'generic',
   DND_5E = 'dnd5e',
-  WARHAMMER_40K = 'warhammer40k',
-  BATTLETECH = 'battletech',
-  CUSTOM = 'custom'
+  WARHAMMER_40K = '40k',
+  BATTLETECH = 'battletech'
+}
+
+/**
+ * Export formats
+ */
+export enum ExportFormat {
+  PNG = 'png',
+  PDF = 'pdf'
+}
+
+/**
+ * Paper size options for export
+ */
+export enum PaperSize {
+  A4 = 'a4',
+  LETTER = 'letter',
+  LEGAL = 'legal',
+  TABLOID = 'tabloid'
+}
+
+/**
+ * Paper orientation options
+ */
+export enum PaperOrientation {
+  PORTRAIT = 'portrait',
+  LANDSCAPE = 'landscape'
+}
+
+/**
+ * Options for exporting maps
+ */
+export interface ExportOptions {
+  format: ExportFormat;
+  filename: string;
+  paperSize: PaperSize;
+  orientation: PaperOrientation;
+  dpi: number;
+  includeMetadata: boolean;
+}
+
+/**
+ * Options for rendering maps
+ */
+export interface RenderOptions {
+  showContours?: boolean;
+  showGrid?: boolean;
+  showScale?: boolean;
+  showTitle?: boolean;
+  title?: string;
+  contourColor?: string;
+  gridColor?: string;
+  backgroundColor?: string;
 }
 
 /**
@@ -35,26 +87,6 @@ export interface GameSystemConfig {
   gridSize: number; // Grid size in real-world units
   unit: 'feet' | 'meters' | 'inches';
   scaleRatio: number; // Real-world units per grid square/hex
-}
-
-/**
- * Export format options
- */
-export enum ExportFormat {
-  PNG = 'png',
-  PDF = 'pdf'
-}
-
-/**
- * Export options configuration
- */
-export interface ExportOptions {
-  format: ExportFormat;
-  filename: string;
-  paperSize: 'a4' | 'letter' | 'legal';
-  orientation: 'portrait' | 'landscape';
-  dpi: number;
-  includeMetadata: boolean;
 }
 
 /**
@@ -82,8 +114,8 @@ export const GAME_SYSTEM_PRESETS: Record<GameSystem, GameSystemConfig> = {
     unit: 'meters',
     scaleRatio: 1
   },
-  [GameSystem.CUSTOM]: {
-    name: 'Custom',
+  [GameSystem.GENERIC]: {
+    name: 'Generic',
     gridType: GridType.SQUARE,
     gridSize: 10,
     unit: 'feet',

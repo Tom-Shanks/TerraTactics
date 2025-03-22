@@ -3,13 +3,27 @@
   height: 100% !important;
   width: 100% !important;
   z-index: 10;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Debugging - add colored outlines to see elements */
+.leaflet-container {
+  outline: 2px solid blue !important;
+}
+
+.leaflet-control-container {
+  outline: 2px solid green !important;
+  visibility: visible !important;
+  display: block !important;
 }
 
 /* Force the draw tools to be visible */
 .leaflet-draw.leaflet-control {
   display: block !important;
   visibility: visible !important;
-  z-index: 1000 !important;
+  z-index: 9999 !important;
+  outline: 2px solid red !important;
 }
 
 .leaflet-draw-toolbar {
@@ -17,15 +31,26 @@
   visibility: visible !important;
 }
 
-/* Ensure the toolbar buttons are properly displayed */
+/* Make toolbar visible with important flags */
 .leaflet-draw-toolbar a {
   background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg') !important;
   background-repeat: no-repeat !important;
   background-size: 270px 30px !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-rectangle {
   background-position: -2px -2px !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.leaflet-touch .leaflet-bar a {
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  display: block !important;
 }
 
 /* Fix toolbar tooltip positioning */
@@ -40,9 +65,9 @@
   margin-top: -21px;
   padding: 4px 8px;
   position: absolute;
-  visibility: hidden;
+  visibility: visible !important;
   white-space: nowrap;
-  z-index: 6;
+  z-index: 9999 !important;
 }
 
 /* Fix draw handlers */
@@ -55,6 +80,7 @@
   left: 26px;
   top: 0;
   white-space: nowrap;
+  z-index: 9999 !important;
 }
 
 /* Ensure all icons are visible */
@@ -65,10 +91,16 @@
 
 .leaflet-control-layers-toggle {
   background-image: url(https://unpkg.com/leaflet@1.9.4/dist/images/layers.png) !important;
+  visibility: visible !important;
+  display: block !important;
 }
 
 .map {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative !important;
+  display: block !important;
+  height: 100% !important;
+  width: 100% !important;
 } 

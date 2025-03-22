@@ -15,10 +15,7 @@ interface TerrainMapProps {
   onAreaSelected: (bounds: L.LatLngBounds) => void;
 }
 
-// Force the Leaflet default icon to be available
-const DefaultIcon = L.Icon.Default.prototype;
-DefaultIcon.options.iconUrl = icon;
-DefaultIcon.options.shadowUrl = iconShadow;
+// Ensure Leaflet default icon is set
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: icon,
   iconUrl: icon,
@@ -29,8 +26,16 @@ L.Icon.Default.mergeOptions({
 const MapInitializer = ({ onMapReady }: { onMapReady: (map: L.Map) => void }) => {
   const map = useMap();
   
+  // Use effect to make sure map is initialized
   useEffect(() => {
+    console.log('Map initialized:', map);
     onMapReady(map);
+    
+    // Force map to recalculate size and redraw
+    setTimeout(() => {
+      console.log('Invalidating map size...');
+      map.invalidateSize(true);
+    }, 100);
   }, [map, onMapReady]);
   
   return null;
@@ -42,54 +47,46 @@ const TerrainMap: React.FC<TerrainMapProps> = ({ onAreaSelected }) => {
   
   // Initialize the map
   const handleMapReady = (mapInstance: L.Map) => {
-    console.log("Map is ready:", mapInstance);
+    console.log("Map ready!", mapInstance);
     setMap(mapInstance);
     
-    // Force invalidate size to ensure the map renders correctly
+    // Add visible indicator text for debugging
+    const debugElement = document.createElement('div');
+    debugElement.style.position = 'absolute';
+    debugElement.style.bottom = '10px';
+    debugElement.style.right = '10px';
+    debugElement.style.backgroundColor = 'white';
+    debugElement.style.padding = '5px';
+    debugElement.style.zIndex = '1000';
+    debugElement.style.border = '1px solid black';
+    debugElement.textContent = 'Map is loaded';
+    
+    mapInstance.getContainer().appendChild(debugElement);
+    
+    // Add helper text for drawing
+    const helpElement = document.createElement('div');
+    helpElement.style.position = 'absolute';
+    helpElement.style.top = '80px';
+    helpElement.style.left = '10px';
+    helpElement.style.backgroundColor = 'white';
+    helpElement.style.padding = '5px 10px';
+    helpElement.style.zIndex = '1000';
+    helpElement.style.border = '1px solid #ccc';
+    helpElement.style.borderRadius = '4px';
+    helpElement.innerHTML = 'Click the <strong>rectangle</strong> button in the toolbar to draw';
+    
+    mapInstance.getContainer().appendChild(helpElement);
+    
+    // Force redraw after a delay
     setTimeout(() => {
-      mapInstance.invalidateSize();
-      
-      // Add a helper tooltip to show users how to use the drawing tools
-      const helpDiv = document.createElement('div');
-      helpDiv.style.position = 'absolute';
-      helpDiv.style.top = '70px';
-      helpDiv.style.left = '10px';
-      helpDiv.style.zIndex = '1000';
-      helpDiv.style.backgroundColor = 'white';
-      helpDiv.style.padding = '5px 10px';
-      helpDiv.style.borderRadius = '4px';
-      helpDiv.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
-      helpDiv.innerHTML = 'Click the rectangle icon <span style="font-size: 1.2em">▢</span> in the toolbar to draw an area';
-      
-      const mapContainer = mapInstance.getContainer();
-      mapContainer.appendChild(helpDiv);
-      
-      // Hide after 15 seconds
-      setTimeout(() => {
-        helpDiv.style.display = 'none';
-      }, 15000);
-    }, 100);
+      mapInstance.invalidateSize(true);
+    }, 500);
   };
-  
-  // Effect to handle map resizing
-  useEffect(() => {
-    if (!map) return;
-    
-    const handleResize = () => {
-      map.invalidateSize();
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [map]);
   
   // Handle the created event from Leaflet.Draw
   const handleCreated = (e: any) => {
     console.log("Shape created:", e);
-    const { layer, layerType } = e;
+    const { layer } = e;
     
     try {
       // Clear any existing layers
@@ -140,7 +137,21 @@ const TerrainMap: React.FC<TerrainMapProps> = ({ onAreaSelected }) => {
   };
   
   return (
-    <div className="map" style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div className="map" style={{ width: '100%', height: '100%', position: 'relative', display: 'block' }}>
+      {/* Fallback content in case map doesn't load */}
+      <div style={{ 
+        position: 'absolute',
+        zIndex: 5,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        padding: '10px',
+        borderRadius: '5px'
+      }}>
+        Loading map...
+      </div>
+      
       <MapContainer
         center={[37.7749, -122.4194]}
         zoom={13}

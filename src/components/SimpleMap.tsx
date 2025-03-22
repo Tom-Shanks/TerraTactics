@@ -1,106 +1,182 @@
-import { useEffect, useRef } from 'react';
-import './SimpleMap.css';
+import { useRef, useEffect, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet-draw';
+import '../styles/SimpleMap.css';
+import { Bounds } from '../types';
 
-// This is a simple Leaflet map implementation that avoids React integration issues
+// Make sure Leaflet's default icons work
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
 interface SimpleMapProps {
-  onAreaSelected?: (bounds: any) => void;
+  onAreaSelected: (bounds: Bounds) => void;
 }
 
-const SimpleMap = ({ onAreaSelected }: SimpleMapProps) => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const [drawnItems, setDrawnItems] = useState<L.FeatureGroup | null>(null);
 
   useEffect(() => {
-    // Skip if window.L is not available or if mapInstance already exists
-    if (!window.L || mapInstanceRef.current) return;
+    // Log when component mounts
+    console.log('SimpleMap component mounting');
+    
+    // Check if Leaflet is available
+    if (!L) {
+      console.error('Leaflet library not loaded!');
+      return;
+    }
 
-    console.log('Initializing simple map with direct Leaflet API');
-    
-    // Create map instance
-    const mapContainer = mapContainerRef.current;
-    if (!mapContainer) return;
-    
-    try {
-      // Clear any previous content
-      mapContainer.innerHTML = '';
+    // Only initialize the map if it doesn't exist and the container is ready
+    if (!mapInstance && mapRef.current) {
+      console.log('Initializing map...');
       
-      // Create map with clear dimensions
-      mapContainer.style.height = '500px';
-      mapContainer.style.width = '100%';
-      mapContainer.style.position = 'relative';
-      mapContainer.style.display = 'block';
-      mapContainer.style.border = '3px solid purple';
-      
-      // Initialize map
-      const mapInstance = window.L.map(mapContainer).setView([51.505, -0.09], 13);
-      
-      // Add tile layer
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(mapInstance);
-      
-      // Store the map instance
-      mapInstanceRef.current = mapInstance;
-      
-      // Add drawing controls if available
-      if (window.L.drawVersion) {
-        const drawnItems = new window.L.FeatureGroup();
-        mapInstance.addLayer(drawnItems);
+      try {
+        // Create the map instance
+        const map = L.map(mapRef.current, {
+          center: [37.7749, -122.4194], // Default center (San Francisco)
+          zoom: 10,
+          zoomControl: true,
+        });
         
-        const drawControl = new window.L.Control.Draw({
+        // Add the tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        }).addTo(map);
+        
+        // Create feature group for drawn items
+        const items = new L.FeatureGroup();
+        map.addLayer(items);
+        
+        // Initialize the draw control
+        const drawControl = new L.Control.Draw({
           draw: {
-            polygon: false,
             polyline: false,
+            polygon: false,
             circle: false,
             circlemarker: false,
             marker: false,
             rectangle: {
               shapeOptions: {
-                color: '#ff0000',
-                weight: 3
-              }
-            }
+                color: '#3388ff',
+                weight: 3,
+              },
+              metric: true,
+            },
           },
           edit: {
-            featureGroup: drawnItems
-          }
+            featureGroup: items,
+          },
         });
         
-        mapInstance.addControl(drawControl);
+        map.addControl(drawControl);
         
-        // Handle draw events
-        mapInstance.on('draw:created', function(e: any) {
-          const layer = e.layer;
-          drawnItems.addLayer(layer);
+        // Event handler for when a rectangle is created
+        map.on(L.Draw.Event.CREATED, (event: any) => {
+          const layer = event.layer;
+          items.addLayer(layer);
           
-          if (layer.getBounds && onAreaSelected) {
-            onAreaSelected(layer.getBounds());
+          // Extract bounds from the drawn rectangle
+          const bounds = layer.getBounds();
+          console.log('Rectangle created with bounds:', bounds);
+          
+          // Convert to our Bounds type
+          const areaBounds: Bounds = {
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest(),
+          };
+          
+          // Call the callback with the selected area
+          onAreaSelected(areaBounds);
+        });
+        
+        // Event for when drawn items are edited
+        map.on(L.Draw.Event.EDITED, (event: any) => {
+          const layers = event.layers;
+          let newBounds: Bounds | null = null;
+          
+          layers.eachLayer((layer: any) => {
+            const bounds = layer.getBounds();
+            newBounds = {
+              north: bounds.getNorth(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              west: bounds.getWest(),
+            };
+          });
+          
+          if (newBounds) {
+            console.log('Rectangle edited with new bounds:', newBounds);
+            onAreaSelected(newBounds);
           }
         });
+        
+        // Event for when drawn items are deleted
+        map.on(L.Draw.Event.DELETED, () => {
+          console.log('Rectangle deleted, clearing selection');
+          // Send null bounds to indicate no selection
+          onAreaSelected({
+            north: 0,
+            south: 0,
+            east: 0,
+            west: 0,
+          });
+        });
+        
+        // Store the map instance
+        setMapInstance(map);
+        setDrawnItems(items);
+        
+        console.log('Map initialization complete');
+        
+        // Force a resize after a short delay to ensure proper rendering
+        setTimeout(() => {
+          if (map) {
+            console.log('Invalidating map size');
+            map.invalidateSize();
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error initializing map:', error);
       }
-      
-      // Force a resize after a delay
-      setTimeout(() => {
-        mapInstance.invalidateSize();
-        console.log('Map size invalidated');
-      }, 500);
-      
-    } catch (error) {
-      console.error('Error initializing map:', error);
     }
     
-    // Cleanup function
+    // Cleanup function to destroy the map when component unmounts
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+      if (mapInstance) {
+        console.log('Cleaning up map instance');
+        mapInstance.remove();
+        setMapInstance(null);
+        setDrawnItems(null);
       }
     };
-  }, [onAreaSelected]);
+  }, [mapInstance, onAreaSelected]);
   
+  // Effect to handle window resize events
+  useEffect(() => {
+    const handleResize = () => {
+      if (mapInstance) {
+        console.log('Window resized, invalidating map size');
+        mapInstance.invalidateSize();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mapInstance]);
+
   return (
-    <div className="simple-map-wrapper">
-      <div ref={mapContainerRef} className="simple-map-container" />
+    <div className="simple-map-container">
+      <div ref={mapRef} className="leaflet-map" data-testid="map-element"></div>
     </div>
   );
 };
