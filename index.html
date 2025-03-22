@@ -14,27 +14,52 @@
       .map-container {
         position: relative !important;
         height: 500px !important;
+        display: block !important;
       }
       .leaflet-container {
         height: 100% !important;
         width: 100% !important;
-      }
-      /* Make Leaflet draw controls visible */
-      .leaflet-draw.leaflet-control {
-        z-index: 1000 !important;
         display: block !important;
       }
-      .leaflet-draw-toolbar {
+      
+      /* Debug outlines */
+      .map-container {
+        border: 3px solid red !important;
+      }
+      .map {
+        border: 3px solid blue !important;
+      }
+      
+      /* Fix for Leaflet Draw toolbar */
+      .leaflet-draw.leaflet-control {
         display: block !important;
         visibility: visible !important;
+        z-index: 1000 !important;
       }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Add direct script includes for Leaflet -->
+    <!-- Add direct script includes for Leaflet - load before the app starts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script>
+      // Debug check to ensure Leaflet is available
+      window.addEventListener('load', function() {
+        console.log('Window loaded, checking Leaflet availability');
+        console.log('Leaflet available:', typeof L !== 'undefined');
+        console.log('Leaflet Draw available:', L && typeof L.drawVersion !== 'undefined');
+        
+        // Force CSS reload
+        const links = document.getElementsByTagName('link');
+        for (let i = 0; i < links.length; i++) {
+          const link = links[i];
+          if (link.rel === 'stylesheet') {
+            link.href = link.href + '?forceReload=' + new Date().getTime();
+          }
+        }
+      });
+    </script>
   </body>
 </html>
