@@ -1,4 +1,6 @@
-// Geographic bounds interface
+/**
+ * Geographic bounds for a map area
+ */
 export interface Bounds {
   north: number;
   south: number;
@@ -6,64 +8,94 @@ export interface Bounds {
   west: number;
 }
 
-// Grid type enumeration
+/**
+ * Grid types for tabletop gaming
+ */
 export enum GridType {
-  HEX = 'hex',
-  SQUARE = 'square'
+  SQUARE = 'square',
+  HEX = 'hex'
 }
 
-// Game system preset interface
-export interface GameSystem {
-  id: string;
+/**
+ * Game system presets for common tabletop games
+ */
+export enum GameSystem {
+  DND_5E = 'dnd5e',
+  WARHAMMER_40K = 'warhammer40k',
+  BATTLETECH = 'battletech',
+  CUSTOM = 'custom'
+}
+
+/**
+ * Game system configuration
+ */
+export interface GameSystemConfig {
   name: string;
-  defaultGridType: GridType;
-  gridSize: number; // in mm
-  scaleRatio: number; // e.g., 1:100
+  gridType: GridType;
+  gridSize: number; // Grid size in real-world units
+  unit: 'feet' | 'meters' | 'inches';
+  scaleRatio: number; // Real-world units per grid square/hex
 }
 
-// Common game systems
-export const GAME_SYSTEMS: GameSystem[] = [
-  {
-    id: 'dnd',
-    name: 'Dungeons & Dragons',
-    defaultGridType: GridType.SQUARE,
-    gridSize: 25.4, // 1 inch in mm
-    scaleRatio: 5, // 1 square = 5 feet
+/**
+ * Export format options
+ */
+export enum ExportFormat {
+  PNG = 'png',
+  PDF = 'pdf'
+}
+
+/**
+ * Export options configuration
+ */
+export interface ExportOptions {
+  format: ExportFormat;
+  filename: string;
+  paperSize: 'a4' | 'letter' | 'legal';
+  orientation: 'portrait' | 'landscape';
+  dpi: number;
+  includeMetadata: boolean;
+}
+
+/**
+ * Default game system configurations
+ */
+export const GAME_SYSTEM_PRESETS: Record<GameSystem, GameSystemConfig> = {
+  [GameSystem.DND_5E]: {
+    name: 'D&D 5th Edition',
+    gridType: GridType.SQUARE,
+    gridSize: 5,
+    unit: 'feet',
+    scaleRatio: 1
   },
-  {
-    id: 'warhammer',
+  [GameSystem.WARHAMMER_40K]: {
     name: 'Warhammer 40K',
-    defaultGridType: GridType.HEX,
-    gridSize: 25, // Approx hex size in mm
-    scaleRatio: 10, // Rough scale for miniatures
+    gridType: GridType.SQUARE,
+    gridSize: 1,
+    unit: 'inches',
+    scaleRatio: 1
   },
-  {
-    id: 'pathfinder',
-    name: 'Pathfinder',
-    defaultGridType: GridType.SQUARE,
-    gridSize: 25.4, // 1 inch in mm
-    scaleRatio: 5, // 1 square = 5 feet
+  [GameSystem.BATTLETECH]: {
+    name: 'Battletech',
+    gridType: GridType.HEX,
+    gridSize: 30,
+    unit: 'meters',
+    scaleRatio: 1
   },
-  {
-    id: 'custom',
+  [GameSystem.CUSTOM]: {
     name: 'Custom',
-    defaultGridType: GridType.SQUARE,
-    gridSize: 10, // Default 10mm
-    scaleRatio: 1, // 1:1 ratio
-  },
-];
+    gridType: GridType.SQUARE,
+    gridSize: 10,
+    unit: 'feet',
+    scaleRatio: 1
+  }
+};
 
 // Elevation data source
 export enum ElevationDataSource {
   USGS = 'usgs',
   OPEN_TOPOGRAPHY = 'openTopography',
   AWS_TERRAIN = 'awsTerrain',
-}
-
-// Export format
-export enum ExportFormat {
-  PDF = 'pdf',
-  PNG = 'png',
 }
 
 // Contour interval options

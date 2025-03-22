@@ -1,9 +1,9 @@
 import { Bounds, GridType, GameSystem } from '../types';
 
-interface GridCell {
+export interface GridCell {
   id: string;
-  points: { x: number; y: number }[];
-  center: { x: number; y: number };
+  coordinates: number[][]; // Array of [lng, lat] points forming the cell
+  center: [number, number]; // [lng, lat] of center point
 }
 
 interface GridConfig {
@@ -16,226 +16,216 @@ interface GridConfig {
 
 class GridService {
   /**
-   * Generate a grid for the specified bounds and configuration
-   * @param bounds The geographic bounds for the grid
-   * @param config The grid configuration
+   * Generate a grid overlay for tabletop gaming
+   * @param bounds Geographic bounds of the area
+   * @param gridType Type of grid (square or hex)
+   * @param gridSize Size of each grid cell in game units (e.g., 5 feet)
    * @returns Array of grid cells
    */
-  generateGrid(bounds: Bounds, config: GridConfig): GridCell[];
+  generateGrid(bounds: Bounds, gridType: GridType, gridSize: number): GridCell[] {
+    console.log(`Generating ${gridType} grid with size ${gridSize} units`);
+    
+    const { north, south, east, west } = bounds;
+    
+    // Calculate the real-world distance of the area
+    const widthMeters = this.calculateDistance(north, west, north, east);
+    const heightMeters = this.calculateDistance(north, west, south, west);
+    
+    console.log(`Area dimensions: ${widthMeters.toFixed(2)}m x ${heightMeters.toFixed(2)}m`);
+    
+    // Calculate cell size in meters (1 unit = 1 foot for D&D)
+    const feetToMeters = 0.3048;
+    const cellSizeMeters = gridSize * feetToMeters;
+    
+    // Calculate number of cells in each dimension
+    const cellsX = Math.ceil(widthMeters / cellSizeMeters);
+    const cellsY = Math.ceil(heightMeters / cellSizeMeters);
+    
+    console.log(`Grid dimensions: ${cellsX} x ${cellsY} cells`);
+    
+    // Generate grid based on type
+    if (gridType === GridType.HEX) {
+      return this.generateHexGrid(bounds, cellsX, cellsY, cellSizeMeters);
+    } else {
+      return this.generateSquareGrid(bounds, cellsX, cellsY, cellSizeMeters);
+    }
+  }
   
   /**
-   * Generate a grid for the specified bounds with simplified parameters
-   * @param bounds The geographic bounds for the grid
-   * @param gridType The type of grid (hex or square)
-   * @param gridSize The size of each grid cell in mm
+   * Generate a square grid
+   * @param bounds Geographic bounds
+   * @param cellsX Number of cells in X direction
+   * @param cellsY Number of cells in Y direction
+   * @param cellSizeMeters Size of each cell in meters
    * @returns Array of grid cells
    */
-  generateGrid(bounds: Bounds, gridType: GridType, gridSize: number): GridCell[];
-  
-  /**
-   * Generate a grid for the specified bounds
-   * @param bounds The geographic bounds for the grid
-   * @param configOrType The grid configuration or grid type
-   * @param gridSize Optional grid size in mm (used when second param is GridType)
-   * @returns Array of grid cells
-   */
-  generateGrid(
-    bounds: Bounds, 
-    configOrType: GridConfig | GridType, 
-    gridSize?: number
+  private generateSquareGrid(
+    bounds: Bounds,
+    cellsX: number,
+    cellsY: number,
+    cellSizeMeters: number
   ): GridCell[] {
-    // Handle both method signatures
-    let config: GridConfig;
-    
-    if (typeof configOrType === 'string') {
-      // gridType and gridSize were provided directly
-      config = {
-        type: configOrType,
-        gridSize: gridSize || 5, // Default to 5mm if not specified
-        scaleRatio: 1,
-        showLabels: true,
-        labelCharset: 'alphanumeric'
-      };
-    } else {
-      // Full config object was provided
-      config = configOrType;
-    }
-    
-    return config.type === GridType.HEX
-      ? this.generateHexGrid(bounds, config)
-      : this.generateSquareGrid(bounds, config);
-  }
-
-  /**
-   * Generates a square grid for the specified bounds and configuration
-   * @param bounds The geographic bounds for the grid
-   * @param config The grid configuration
-   * @returns Array of grid cells
-   */
-  private generateSquareGrid(bounds: Bounds, config: GridConfig): GridCell[] {
     const { north, south, east, west } = bounds;
-    const { gridSize, scaleRatio } = config;
+    const grid: GridCell[] = [];
     
-    // Calculate the cell size in degrees
-    // This is an approximation since 1 degree of latitude/longitude varies by location
-    // For a more accurate conversion, we'd use a proper projection library
+    // Calculate the degrees per meter in longitude and latitude
+    const latMeters = this.calculateDistance(north, west, south, west);
+    const lngMeters = this.calculateDistance(north, west, north, east);
     
-    // At the equator, 1 degree of longitude is approximately 111 km
-    // Adjust based on latitude - at lat degrees, 1 degree of longitude = 111 * cos(lat) km
-    const avgLat = (north + south) / 2;
-    const cosLat = Math.cos(avgLat * Math.PI / 180);
+    const latDegreePerMeter = (north - south) / latMeters;
+    const lngDegreePerMeter = (east - west) / lngMeters;
     
-    // Convert grid size from mm to km
-    const gridSizeKm = (gridSize / 1000) * scaleRatio;
+    const cellSizeLat = cellSizeMeters * latDegreePerMeter;
+    const cellSizeLng = cellSizeMeters * lngDegreePerMeter;
     
-    // Calculate cell size in degrees
-    // 111 km = 1 degree at the equator
-    const cellSizeLat = gridSizeKm / 111;
-    const cellSizeLng = gridSizeKm / (111 * cosLat);
-    
-    // Calculate the number of cells
-    const numLat = Math.ceil((north - south) / cellSizeLat);
-    const numLng = Math.ceil((east - west) / cellSizeLng);
-    
-    // Generate cells
-    const cells: GridCell[] = [];
-    
-    for (let i = 0; i < numLat; i++) {
-      for (let j = 0; j < numLng; j++) {
-        const cellId = this.generateCellId(j, i, config);
-        const cellSouth = north - (i + 1) * cellSizeLat;
-        const cellNorth = north - i * cellSizeLat;
-        const cellWest = west + j * cellSizeLng;
-        const cellEast = west + (j + 1) * cellSizeLng;
+    // Generate each cell
+    for (let y = 0; y < cellsY; y++) {
+      for (let x = 0; x < cellsX; x++) {
+        const cellWest = west + x * cellSizeLng;
+        const cellEast = west + (x + 1) * cellSizeLng;
+        const cellNorth = north - y * cellSizeLat;
+        const cellSouth = north - (y + 1) * cellSizeLat;
         
-        const cell: GridCell = {
-          id: cellId,
-          points: [
-            { x: cellWest, y: cellNorth },
-            { x: cellEast, y: cellNorth },
-            { x: cellEast, y: cellSouth },
-            { x: cellWest, y: cellSouth },
-            { x: cellWest, y: cellNorth } // Close the polygon
-          ],
-          center: {
-            x: (cellWest + cellEast) / 2,
-            y: (cellNorth + cellSouth) / 2
-          }
-        };
+        // Cell coordinates in clockwise order
+        const coordinates = [
+          [cellWest, cellNorth],  // top-left
+          [cellEast, cellNorth],  // top-right
+          [cellEast, cellSouth],  // bottom-right
+          [cellWest, cellSouth],  // bottom-left
+          [cellWest, cellNorth]   // back to start to close the polygon
+        ];
         
-        cells.push(cell);
+        // Calculate center point
+        const centerLng = (cellWest + cellEast) / 2;
+        const centerLat = (cellNorth + cellSouth) / 2;
+        
+        grid.push({
+          id: `square-${x}-${y}`,
+          coordinates,
+          center: [centerLng, centerLat]
+        });
       }
     }
     
-    return cells;
+    return grid;
   }
-
+  
   /**
-   * Generates a hexagonal grid for the specified bounds and configuration
-   * @param bounds The geographic bounds for the grid
-   * @param config The grid configuration
+   * Generate a hexagonal grid
+   * @param bounds Geographic bounds
+   * @param cellsX Number of cells in X direction
+   * @param cellsY Number of cells in Y direction
+   * @param cellSizeMeters Size of each cell in meters (measured flat to flat)
    * @returns Array of grid cells
    */
-  private generateHexGrid(bounds: Bounds, config: GridConfig): GridCell[] {
+  private generateHexGrid(
+    bounds: Bounds,
+    cellsX: number,
+    cellsY: number,
+    cellSizeMeters: number
+  ): GridCell[] {
     const { north, south, east, west } = bounds;
-    const { gridSize, scaleRatio } = config;
+    const grid: GridCell[] = [];
     
-    // Calculate the cell size in degrees (similar to square grid)
-    const avgLat = (north + south) / 2;
-    const cosLat = Math.cos(avgLat * Math.PI / 180);
+    // Calculate the degrees per meter in longitude and latitude
+    const latMeters = this.calculateDistance(north, west, south, west);
+    const lngMeters = this.calculateDistance(north, west, north, east);
     
-    // Convert grid size from mm to km
-    const gridSizeKm = (gridSize / 1000) * scaleRatio;
+    const latDegreePerMeter = (north - south) / latMeters;
+    const lngDegreePerMeter = (east - west) / lngMeters;
     
-    // For a hexagon, the width (flat-to-flat) is 2 * inradius
-    // The height (point-to-point) is 2 * circumradius
-    // For a regular hexagon, circumradius = inradius / cos(30°) = inradius * 2/sqrt(3)
-    const inradius = gridSizeKm / 2;
-    const circumradius = inradius * 2 / Math.sqrt(3);
+    // For hexagons, we need to calculate some special dimensions
+    // Horizontal distance between hex centers is 1.5 * radius
+    // Vertical distance between hex centers is sqrt(3) * radius
     
-    // Calculate hex dimensions in degrees
-    const hexWidthLng = (inradius * 2) / (111 * cosLat);
-    const hexHeightLat = (circumradius * 2) / 111;
+    const hexRadius = cellSizeMeters / 2;
+    const hexWidth = hexRadius * 2;
+    const hexHeight = hexRadius * Math.sqrt(3);
     
-    // Calculate the number of hexes in each direction
-    // For a hex grid, rows are offset from each other
-    const numLat = Math.ceil((north - south) / (hexHeightLat * 0.75)) + 1; // Add 1 to ensure we cover the area
-    const numLng = Math.ceil((east - west) / hexWidthLng) + 1; // Add 1 to ensure we cover the area
+    const hexWidthLng = hexWidth * lngDegreePerMeter;
+    const hexHeightLat = hexHeight * latDegreePerMeter;
     
-    // Generate hex cells
-    const cells: GridCell[] = [];
+    // Horizontal spacing between hex centers
+    const hexHorizSpacing = hexRadius * 1.5 * lngDegreePerMeter;
     
-    for (let i = 0; i < numLat; i++) {
-      for (let j = 0; j < numLng; j++) {
-        // Odd rows are offset by half a hex width
-        const isOddRow = i % 2 === 1;
-        const offset = isOddRow ? hexWidthLng / 2 : 0;
+    // Generate hex grid
+    for (let row = 0; row < cellsY; row++) {
+      const isOddRow = row % 2 === 1;
+      const rowOffset = isOddRow ? hexHorizSpacing / 2 : 0;
+      
+      for (let col = 0; col < cellsX; col++) {
+        const centerLng = west + rowOffset + col * hexHorizSpacing;
+        const centerLat = north - (row * hexHeightLat);
         
-        const cellId = this.generateCellId(j, i, config);
-        const centerY = north - i * (hexHeightLat * 0.75) - circumradius / 111;
-        const centerX = west + j * hexWidthLng + offset + inradius / (111 * cosLat);
+        // Generate the six points of the hexagon
+        const coordinates: number[][] = [];
         
-        // Skip if the center is outside our bounds
-        if (centerX > east || centerY < south) {
-          continue;
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI / 3) * i;
+          const x = centerLng + (hexRadius * lngDegreePerMeter * Math.cos(angle));
+          const y = centerLat - (hexRadius * latDegreePerMeter * Math.sin(angle));
+          coordinates.push([x, y]);
         }
         
-        // Generate the 6 points of the hexagon
-        const points = [];
-        for (let k = 0; k < 6; k++) {
-          const angle = Math.PI / 3 * k;
-          const x = centerX + (inradius * Math.cos(angle)) / (111 * cosLat);
-          const y = centerY + (circumradius * Math.sin(angle)) / 111;
-          points.push({ x, y });
-        }
         // Close the polygon
-        points.push({ ...points[0] });
+        coordinates.push(coordinates[0]);
         
-        const cell: GridCell = {
-          id: cellId,
-          points,
-          center: {
-            x: centerX,
-            y: centerY
-          }
-        };
-        
-        cells.push(cell);
+        grid.push({
+          id: `hex-${col}-${row}`,
+          coordinates,
+          center: [centerLng, centerLat]
+        });
       }
     }
     
-    return cells;
+    return grid;
   }
-
+  
   /**
-   * Generate a cell ID based on its position
-   * @param x Column index
-   * @param y Row index
-   * @param config Grid configuration
-   * @returns Cell ID (e.g., "A1", "B2")
+   * Calculate the approximate distance between two points on Earth's surface
+   * @param lat1 Latitude of point 1 in decimal degrees
+   * @param lon1 Longitude of point 1 in decimal degrees
+   * @param lat2 Latitude of point 2 in decimal degrees
+   * @param lon2 Longitude of point 2 in decimal degrees
+   * @returns Distance in meters
    */
-  private generateCellId(x: number, y: number, config: GridConfig): string {
-    if (!config.showLabels) {
-      return '';
-    }
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number {
+    // Convert degrees to radians
+    const lat1Rad = lat1 * Math.PI / 180;
+    const lon1Rad = lon1 * Math.PI / 180;
+    const lat2Rad = lat2 * Math.PI / 180;
+    const lon2Rad = lon2 * Math.PI / 180;
     
-    if (config.labelCharset === 'alphanumeric') {
-      // Convert column index to letter (A, B, C, ..., Z, AA, AB, ...)
-      let colStr = '';
-      let tempX = x;
-      
-      do {
-        const remainder = tempX % 26;
-        colStr = String.fromCharCode(65 + remainder) + colStr;
-        tempX = Math.floor(tempX / 26) - 1;
-      } while (tempX >= 0);
-      
-      // Row index is 1-based
-      return `${colStr}${y + 1}`;
-    } else {
-      // Use numbers for both dimensions
-      return `${x + 1},${y + 1}`;
-    }
+    // Earth's radius in meters
+    const R = 6371000;
+    
+    // Use the Haversine formula
+    const dLat = lat2Rad - lat1Rad;
+    const dLon = lon2Rad - lon1Rad;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    return distance;
+  }
+  
+  /**
+   * Get an appropriate color for a grid cell based on its position
+   * @param id The cell ID
+   * @returns A CSS color string
+   */
+  getGridCellColor(id: string): string {
+    // For now, return a semi-transparent black
+    return 'rgba(0, 0, 0, 0.5)';
   }
 
   /**

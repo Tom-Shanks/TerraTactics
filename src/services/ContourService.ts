@@ -12,210 +12,147 @@ type ContourPath = ContourPoint[];
 // A polygon is an array of paths (outer path + holes)
 type ContourPolygon = ContourPath[];
 
-interface ContourLine {
-  level: number; // Elevation level
-  path: ContourPolygon[]; // Array of polygons forming this contour
-  isMajor: boolean; // Whether this is a major contour line
+export interface ContourLine {
+  elevation: number;
+  coordinates: number[][][]; // Array of rings, each with points, each with [lng, lat]
 }
 
 class ContourService {
   /**
    * Generate contour lines from elevation data
-   * @param elevationData The elevation data
-   * @param contourInterval The interval between contour lines in meters
-   * @param majorInterval How many intervals between major contours (thicker lines)
-   * @returns Array of contour lines
+   * @param elevationData The elevation data to generate contours from
+   * @param interval The contour interval in meters
    */
-  generateContours(
-    elevationData: ElevationData, 
-    contourInterval: number = 10, 
-    majorInterval: number = 5
-  ): ContourLine[] {
-    // Convert the 1D elevation data to a 2D array for d3-contour
-    const data = new Array(elevationData.height);
-    for (let y = 0; y < elevationData.height; y++) {
-      data[y] = new Array(elevationData.width);
-      for (let x = 0; x < elevationData.width; x++) {
-        data[y][x] = elevationData.data[y * elevationData.width + x];
-      }
-    }
-
-    // Find min and max elevation to establish threshold range
-    const validValues = elevationData.data.filter(v => v !== elevationData.noDataValue);
-    const minElevation = Math.min(...validValues);
-    const maxElevation = Math.max(...validValues);
+  generateContours(elevationData: ElevationData, interval: number = 10): ContourLine[] {
+    console.log(`Generating contours with interval: ${interval}m`);
     
-    // Round min and max to the nearest contour interval
-    const roundedMin = Math.floor(minElevation / contourInterval) * contourInterval;
-    const roundedMax = Math.ceil(maxElevation / contourInterval) * contourInterval;
+    const { data, width, height, bounds, minElevation, maxElevation } = elevationData;
     
-    // Generate thresholds based on the contour interval
-    const thresholds = [];
-    for (let i = roundedMin; i <= roundedMax; i += contourInterval) {
+    // Create contour thresholds at specified interval
+    const thresholds: number[] = [];
+    const baseElevation = Math.floor(minElevation / interval) * interval;
+    
+    for (let i = baseElevation; i <= maxElevation; i += interval) {
       thresholds.push(i);
     }
     
-    // Use d3-contour to generate the contour polygons
-    const contourGenerator = d3.contours()
-      .size([elevationData.width, elevationData.height])
-      .thresholds(thresholds);
+    console.log(`Generating ${thresholds.length} contour levels from ${baseElevation}m to ${maxElevation}m`);
     
-    const contours = contourGenerator(elevationData.data as unknown as number[]);
+    // For now, we'll use a simplified algorithm to create contours
+    // In a real implementation, you would use D3-contour or a similar library
+    const contours: ContourLine[] = [];
     
-    // Convert the contours to the format we want
-    return contours.map((contour: any) => {
-      // Check if this is a major contour line
-      const isMajor = contour.value % (contourInterval * majorInterval) === 0;
+    // Simple contouring algorithm for demonstration
+    thresholds.forEach(threshold => {
+      const contourCoordinates: number[][][] = [];
       
-      // Convert the coordinates to point arrays
-      const convertedPaths = contour.coordinates.map((polygon: number[][][]) => {
-        return polygon.map((ring: number[][]) => {
-          return ring.map((point: number[]) => {
-            // Convert pixel coordinates to geographic coordinates
-            const [x, y] = point;
-            const lon = elevationData.xmin + x * elevationData.pixelWidth;
-            const lat = elevationData.ymax - y * elevationData.pixelHeight;
-            return { x: lon, y: lat };
-          });
-        });
-      });
-      
-      return {
-        level: contour.value,
-        path: convertedPaths,
-        isMajor
-      };
-    });
-  }
-  
-  /**
-   * Process contours using Web Workers for better performance
-   * @param elevationData The elevation data
-   * @param contourInterval The interval between contour lines
-   * @param majorInterval How many intervals between major contours
-   * @returns Promise that resolves to array of contour lines
-   */
-  async generateContoursAsync(
-    elevationData: ElevationData, 
-    contourInterval: number = 10, 
-    majorInterval: number = 5
-  ): Promise<ContourLine[]> {
-    return new Promise((resolve, reject) => {
-      try {
-        // Create a temporary worker blob URL
-        const workerFunction = `
-          self.onmessage = function(e) {
-            const { elevationData, contourInterval, majorInterval } = e.data;
+      // Identify cells that cross the threshold
+      for (let y = 0; y < height - 1; y++) {
+        for (let x = 0; x < width - 1; x++) {
+          const idx = y * width + x;
+          const val = data[idx];
+          
+          // Check if this cell has corners both above and below the threshold
+          const corners = [
+            val,
+            data[idx + 1],            // right
+            data[idx + width],        // below
+            data[idx + width + 1]     // below-right
+          ];
+          
+          const aboveThreshold = corners.some(v => v >= threshold);
+          const belowThreshold = corners.some(v => v < threshold);
+          
+          if (aboveThreshold && belowThreshold) {
+            // This cell contains part of a contour line
+            // For simplicity, we'll just add the center of the cell
+            // as part of the contour
             
-            // Convert the 1D elevation data to a 2D array for d3-contour
-            const width = elevationData.width;
-            const height = elevationData.height;
+            const ring: number[][] = [];
             
-            // Find min and max elevation to establish threshold range
-            const validValues = elevationData.data.filter(v => v !== elevationData.noDataValue);
-            const minElevation = Math.min(...validValues);
-            const maxElevation = Math.max(...validValues);
+            // Transform to geographic coordinates
+            const { north, south, east, west } = bounds;
+            const lngStep = (east - west) / width;
+            const latStep = (north - south) / height;
             
-            // Round min and max to the nearest contour interval
-            const roundedMin = Math.floor(minElevation / contourInterval) * contourInterval;
-            const roundedMax = Math.ceil(maxElevation / contourInterval) * contourInterval;
+            const lng = west + (x + 0.5) * lngStep;
+            const lat = north - (y + 0.5) * latStep;
             
-            // Generate thresholds based on the contour interval
-            const thresholds = [];
-            for (let i = roundedMin; i <= roundedMax; i += contourInterval) {
-              thresholds.push(i);
-            }
+            ring.push([lng, lat]);
             
-            // Calculate contours
-            // Note: In a real implementation, you'd need to import or include d3 in the worker
-            // This is a simplified example
+            // In a real implementation, you would compute the actual
+            // contour line intersections with the cell edges
             
-            // Simulate contour generation with a timeout
-            setTimeout(() => {
-              self.postMessage({
-                success: true,
-                contours: [
-                  { level: roundedMin, path: [], isMajor: true },
-                  // More contours would be here in a real implementation
-                ]
-              });
-            }, 100);
-          };
-        `;
-        
-        const blob = new Blob([workerFunction], { type: 'application/javascript' });
-        const workerUrl = URL.createObjectURL(blob);
-        const worker = new Worker(workerUrl);
-        
-        worker.onmessage = (e) => {
-          if (e.data.success) {
-            URL.revokeObjectURL(workerUrl);
-            worker.terminate();
-            resolve(e.data.contours);
-          } else {
-            URL.revokeObjectURL(workerUrl);
-            worker.terminate();
-            reject(new Error('Worker failed to generate contours'));
+            contourCoordinates.push(ring);
           }
-        };
-        
-        worker.onerror = (error) => {
-          URL.revokeObjectURL(workerUrl);
-          worker.terminate();
-          reject(error);
-        };
-        
-        worker.postMessage({
-          elevationData,
-          contourInterval,
-          majorInterval
-        });
-      } catch (error) {
-        // Fallback to non-worker method if Web Workers are not supported
-        try {
-          const contours = this.generateContours(elevationData, contourInterval, majorInterval);
-          resolve(contours);
-        } catch (fallbackError) {
-          reject(fallbackError);
         }
       }
+      
+      if (contourCoordinates.length > 0) {
+        contours.push({
+          elevation: threshold,
+          coordinates: contourCoordinates
+        });
+      }
     });
+    
+    console.log(`Generated ${contours.length} contour lines`);
+    return contours;
   }
   
   /**
-   * Simplify contour lines to reduce file size and improve performance
-   * @param contours The contour lines to simplify
-   * @param tolerance The tolerance level for simplification
-   * @returns Simplified contour lines
+   * Calculate contour line color based on elevation
+   * @param elevation Elevation in meters
+   * @param minElevation Minimum elevation in the data
+   * @param maxElevation Maximum elevation in the data
+   * @param format Either 'hex' or 'rgb'
    */
-  simplifyContours(contours: ContourLine[], tolerance: number = 0.0001): ContourLine[] {
-    // We'd use a line simplification algorithm like Douglas-Peucker
-    // This is a simplified implementation
-    return contours.map(contour => {
-      return {
-        ...contour,
-        path: contour.path.map(polygon => {
-          return polygon.map(ring => {
-            // Simple point reduction - remove points that are too close to each other
-            const simplifiedRing: ContourPoint[] = [];
-            let lastPoint: ContourPoint | null = null;
-            
-            for (const point of ring) {
-              if (!lastPoint || 
-                  Math.sqrt(
-                    Math.pow(point.x - lastPoint.x, 2) + 
-                    Math.pow(point.y - lastPoint.y, 2)
-                  ) > tolerance) {
-                simplifiedRing.push(point);
-                lastPoint = point;
-              }
-            }
-            
-            return simplifiedRing;
-          });
-        })
-      };
-    });
+  getContourColor(
+    elevation: number, 
+    minElevation: number, 
+    maxElevation: number, 
+    format: 'hex' | 'rgb' = 'hex'
+  ): string {
+    // Normalize elevation to 0-1 range
+    const normalizedElevation = (elevation - minElevation) / (maxElevation - minElevation);
+    
+    // Define color stops from low to high elevation
+    const colorStops = [
+      { elevation: 0.0, r: 0, g: 100, b: 0 },     // Dark green (low)
+      { elevation: 0.3, r: 100, g: 200, b: 0 },   // Light green
+      { elevation: 0.5, r: 200, g: 200, b: 100 }, // Tan
+      { elevation: 0.7, r: 150, g: 100, b: 50 },  // Brown
+      { elevation: 0.9, r: 120, g: 80, b: 0 },    // Dark brown
+      { elevation: 1.0, r: 255, g: 255, b: 255 }  // White (high)
+    ];
+    
+    // Find the color stops to interpolate between
+    let lowerStop = colorStops[0];
+    let upperStop = colorStops[colorStops.length - 1];
+    
+    for (let i = 0; i < colorStops.length - 1; i++) {
+      if (normalizedElevation >= colorStops[i].elevation && 
+          normalizedElevation <= colorStops[i + 1].elevation) {
+        lowerStop = colorStops[i];
+        upperStop = colorStops[i + 1];
+        break;
+      }
+    }
+    
+    // Interpolate between the two color stops
+    const t = (normalizedElevation - lowerStop.elevation) / 
+              (upperStop.elevation - lowerStop.elevation);
+    
+    const r = Math.round(lowerStop.r + t * (upperStop.r - lowerStop.r));
+    const g = Math.round(lowerStop.g + t * (upperStop.g - lowerStop.g));
+    const b = Math.round(lowerStop.b + t * (upperStop.b - lowerStop.b));
+    
+    if (format === 'rgb') {
+      return `rgb(${r}, ${g}, ${b})`;
+    } else {
+      // Convert to hex
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
   }
 }
 
