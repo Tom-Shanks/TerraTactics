@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaflet Map Test</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+    #map-container {
+      height: 600px;
+      width: 100%;
+      border: 5px solid red;
+    }
+    .info-panel {
+      margin: 20px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="info-panel">
+    <h1>Leaflet Map Test</h1>
+    <p>This is a standalone test to verify Leaflet is working correctly.</p>
+    <p>Use the rectangle tool in the top left to draw an area.</p>
+  </div>
+  
+  <div id="map-container"></div>
+  
+  <div class="info-panel" id="selection-info">
+    <h2>Selected Area</h2>
+    <p>No area selected yet. Use the rectangle tool to select an area.</p>
+  </div>
+  
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  
+  <script>
+    // Initialize the map
+    window.onload = function() {
+      console.log('Window loaded. Initializing map...');
+      
+      // Create map
+      const map = L.map('map-container').setView([51.505, -0.09], 13);
+      
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Add drawing controls
+      const drawnItems = new L.FeatureGroup();
+      map.addLayer(drawnItems);
+      
+      const drawControl = new L.Control.Draw({
+        draw: {
+          polygon: false,
+          polyline: false,
+          circle: false,
+          circlemarker: false,
+          marker: false,
+          rectangle: {
+            shapeOptions: {
+              color: '#ff0000',
+              weight: 3
+            }
+          }
+        },
+        edit: {
+          featureGroup: drawnItems
+        }
+      });
+      
+      map.addControl(drawControl);
+      
+      // Handle draw events
+      map.on('draw:created', function(e) {
+        const layer = e.layer;
+        drawnItems.addLayer(layer);
+        
+        // Show the selected bounds
+        const bounds = layer.getBounds();
+        document.getElementById('selection-info').innerHTML = `
+          <h2>Selected Area</h2>
+          <p>
+            North: ${bounds.getNorth().toFixed(6)}<br>
+            South: ${bounds.getSouth().toFixed(6)}<br>
+            East: ${bounds.getEast().toFixed(6)}<br>
+            West: ${bounds.getWest().toFixed(6)}
+          </p>
+        `;
+      });
+      
+      // Add a marker to show the map is working
+      L.marker([51.5, -0.09]).addTo(map)
+        .bindPopup('Map is working!')
+        .openPopup();
+      
+      // Force a resize after a delay
+      setTimeout(() => {
+        map.invalidateSize();
+        console.log('Map size invalidated');
+      }, 500);
+    };
+  </script>
+</body>
+</html> 
