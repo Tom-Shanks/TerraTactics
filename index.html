@@ -27,6 +27,8 @@
       .leaflet-container {
         height: 100%;
         width: 100%;
+        position: relative;
+        z-index: 10;
       }
       
       /* Force visibility of map and controls */
@@ -44,6 +46,24 @@
       .leaflet-draw-actions {
         visibility: visible !important;
         display: block !important;
+      }
+      
+      /* Ensure draw toolbar is visible */
+      .leaflet-draw.leaflet-control {
+        z-index: 1000 !important;
+        margin-top: 10px !important;
+        margin-left: 10px !important;
+      }
+      
+      /* Fix control positioning */
+      .leaflet-top, .leaflet-bottom {
+        z-index: 1000 !important;
+        position: absolute !important;
+      }
+      
+      .leaflet-top.leaflet-left {
+        top: 10px !important;
+        left: 10px !important;
       }
     </style>
     

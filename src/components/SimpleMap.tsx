@@ -40,6 +40,10 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
           center: [37.7749, -122.4194], // Default center (San Francisco)
           zoom: 10,
           zoomControl: true,
+          attributionControl: true,
+          dragging: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
         });
         
         // Add the tile layer
@@ -54,6 +58,7 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
         
         // Initialize the draw control
         const drawControl = new L.Control.Draw({
+          position: 'topleft',
           draw: {
             polyline: false,
             polygon: false,
@@ -64,12 +69,15 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
               shapeOptions: {
                 color: '#3388ff',
                 weight: 3,
+                opacity: 0.8,
+                fillOpacity: 0.2
               },
               metric: true,
             },
           },
           edit: {
             featureGroup: items,
+            remove: true
           },
         });
         
@@ -77,6 +85,7 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
         
         // Event handler for when a rectangle is created
         map.on(L.Draw.Event.CREATED, (event: any) => {
+          console.log('Rectangle created', event);
           const layer = event.layer;
           items.addLayer(layer);
           
@@ -135,13 +144,30 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
         
         console.log('Map initialization complete');
         
-        // Force a resize after a short delay to ensure proper rendering
+        // Force multiple resizes after initialization to ensure proper rendering
         setTimeout(() => {
           if (map) {
-            console.log('Invalidating map size');
+            console.log('Invalidating map size - first pass');
             map.invalidateSize();
           }
         }, 100);
+        
+        setTimeout(() => {
+          if (map) {
+            console.log('Invalidating map size - second pass');
+            map.invalidateSize();
+          }
+        }, 500);
+        
+        // Force a final resize after everything is settled
+        setTimeout(() => {
+          if (map) {
+            console.log('Invalidating map size - final pass');
+            map.invalidateSize();
+            // Trigger a custom event for the browser to recognize the new layout
+            window.dispatchEvent(new Event('resize'));
+          }
+        }, 1000);
       } catch (error) {
         console.error('Error initializing map:', error);
       }

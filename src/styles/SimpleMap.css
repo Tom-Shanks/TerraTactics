@@ -3,9 +3,12 @@
   width: 100%;
   height: 500px;
   border: 1px solid #ccc;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  padding-top: 40px;
+  padding-left: 10px;
 }
 
 .leaflet-map {
@@ -22,16 +25,23 @@
 /* Make sure all map controls are visible and properly styled */
 .leaflet-control-container {
   visibility: visible !important;
+  z-index: 800;
 }
 
 .leaflet-draw.leaflet-control {
   display: block !important;
   visibility: visible !important;
+  margin-top: 10px;
+  z-index: 1000;
 }
 
 .leaflet-draw-toolbar {
   display: block !important;
   visibility: visible !important;
+}
+
+.leaflet-draw-toolbar .leaflet-draw-draw-rectangle {
+  background-position: -2px -2px;
 }
 
 /* Make sure draw tooltip is visible */
@@ -51,6 +61,15 @@
   z-index: 9999 !important;
 }
 
+/* Ensure proper positioning of controls */
+.leaflet-top {
+  top: 10px;
+}
+
+.leaflet-left {
+  left: 10px;
+}
+
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .simple-map-container {
@@ -61,5 +80,6 @@
 @media (max-width: 767px) {
   .simple-map-container {
     height: 400px;
+    padding-top: 50px;
   }
 } 
