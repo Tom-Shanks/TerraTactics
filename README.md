@@ -4,6 +4,7 @@ A web application for generating realistic 3D terrain maps for tabletop gaming u
 
 ## Latest Updates (June 20, 2024)
 
+- Fixed TypeScript configuration to resolve build errors
 - Consolidated all development into the main branch
 - Fixed map display issues with Leaflet integration
 - Improved component structure and stylesheet organization
