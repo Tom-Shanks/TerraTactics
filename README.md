@@ -24,6 +24,8 @@ This project is built with:
 - Leaflet for interactive maps
 - AWS Terrain Tiles and USGS 3DEP for elevation data
 
+> **Note**: This project uses `main` as the primary branch. All development and contributions should target the `main` branch.
+
 ## Getting Started
 
 ```bash
