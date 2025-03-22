@@ -8,6 +8,7 @@ import ExportService from './services/ExportService';
 import { Bounds, GridType } from './types';
 import './App.css';
 import TerrainMap from './components/TerrainMap';
+import SimpleMap from './components/SimpleMap';
 
 function App() {
   // State for app views
@@ -105,110 +106,20 @@ function App() {
 
   // Generator view
   const renderGenerator = () => {
-    // Original app content
     return (
-      <div className="app-container">
-        <header>
-          <h1>Tabletop Terrain Map Generator</h1>
-          <button onClick={() => handleViewChange('landing')}>Back to Home</button>
+      <div className="generator-view">
+        <header className="generator-header">
+          <h1>Terrain Map Generator</h1>
+          <button className="btn btn-primary home-button" onClick={() => handleViewChange('landing')}>
+            Back to Home
+          </button>
         </header>
-        
-        <div className="map-container">
-          <TerrainMap onAreaSelected={handleAreaSelected} />
-          <div className="instructions">
-            <p>Use the rectangle tool to select an area for your terrain map.</p>
-          </div>
+        <div className="instructions">
+          <p>Select an area for your terrain map using the rectangle tool.</p>
         </div>
-        
-        {/* Controls UI */}
-        <div className="controls-container">
-          {selectedArea && (
-            <div className="selected-bounds-info">
-              <h3>Selected Area</h3>
-              <p>
-                North: {selectedArea.getNorth().toFixed(6)}, South: {selectedArea.getSouth().toFixed(6)},
-                East: {selectedArea.getEast().toFixed(6)}, West: {selectedArea.getWest().toFixed(6)}
-              </p>
-              <button onClick={handleGenerateElevationData} disabled={loading}>
-                {loading ? 'Generating...' : 'Generate Elevation Data'}
-              </button>
-            </div>
-          )}
-          
-          {elevationData && (
-            <div className="control-section">
-              <h2>Contour Settings</h2>
-              <div className="form-group">
-                <label htmlFor="contour-interval">Contour Interval (meters):</label>
-                <input
-                  id="contour-interval"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={contourInterval}
-                  onChange={(e) => setContourInterval(parseInt(e.target.value))}
-                />
-              </div>
-              <button onClick={handleGenerateContours} disabled={loading}>
-                {loading ? 'Generating...' : 'Generate Contours'}
-              </button>
-            </div>
-          )}
-          
-          {contourData && (
-            <div className="control-section">
-              <h2>Grid Settings</h2>
-              <div className="form-group">
-                <label htmlFor="grid-type">Grid Type:</label>
-                <select
-                  id="grid-type"
-                  value={gridType}
-                  onChange={(e) => setGridType(e.target.value as GridType)}
-                >
-                  <option value={GridType.SQUARE}>Square</option>
-                  <option value={GridType.HEX}>Hexagon</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="grid-size">Grid Size (mm):</label>
-                <input
-                  id="grid-size"
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={gridSize}
-                  onChange={(e) => setGridSize(parseInt(e.target.value))}
-                />
-              </div>
-              <button onClick={handleGenerateGrid} disabled={loading}>
-                {loading ? 'Generating...' : 'Generate Grid'}
-              </button>
-            </div>
-          )}
-          
-          {gridData && (
-            <div className="control-section">
-              <h2>Export</h2>
-              <div className="export-buttons">
-                <button onClick={() => handleExport('png')} disabled={loading}>
-                  Export as PNG
-                </button>
-                <button onClick={() => handleExport('pdf')} disabled={loading}>
-                  Export as PDF
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {error && <div className="error-message">{error}</div>}
+        <div className="map-container" style={{ height: '500px', position: 'relative', display: 'block' }}>
+          <SimpleMap onAreaSelected={handleAreaSelected} />
         </div>
-        
-        <footer>
-          <p>
-            TerraTactics uses elevation data from multiple open sources including USGS and AWS Terrain Tiles.
-            No API keys required.
-          </p>
-        </footer>
       </div>
     );
   };

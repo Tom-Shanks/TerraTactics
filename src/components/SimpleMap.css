@@ -1,0 +1,36 @@
+.simple-map-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.simple-map-container {
+  height: 500px !important;
+  width: 100% !important;
+  position: relative !important;
+  display: block !important;
+  border: 3px solid purple !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Force all leaflet elements to be visible */
+.leaflet-container {
+  visibility: visible !important;
+  z-index: 1 !important;
+}
+
+.leaflet-control-container {
+  visibility: visible !important;
+  z-index: 1000 !important;
+  display: block !important;
+}
+
+.leaflet-draw.leaflet-control {
+  display: block !important;
+  visibility: visible !important;
+  z-index: 1000 !important;
+} 

@@ -323,28 +323,27 @@ header button {
 .map-container {
   margin-bottom: 1.5rem;
   width: 100%;
-  height: 400px;
+  height: 500px !important;
+  border: 1px solid #ccc;
+  position: relative !important;
+  display: block !important;
 }
 
 @media (min-width: 768px) {
   .map-container {
     margin-bottom: 2rem;
-    height: 600px;
+    height: 600px !important;
   }
 }
 
 .map {
-  height: 100%;
+  height: 100% !important;
+  width: 100% !important;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1;
-}
-
-@media (min-width: 768px) {
-  .map {
-    height: 500px;
-  }
+  display: block !important;
 }
 
 .instructions {
@@ -505,7 +504,20 @@ footer {
 .leaflet-container {
   height: 100% !important;
   width: 100% !important;
-  z-index: 1;
+  z-index: 10;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Force map panes to be visible */
+.leaflet-map-pane {
+  z-index: 2 !important;
+  visibility: visible !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 3 !important;
+  visibility: visible !important;
 }
 
 /* Make sure the Leaflet draw toolbar is visible */
@@ -572,4 +584,60 @@ footer {
 
 .selected-bounds-info button {
   margin-top: 0;
+}
+
+/* Generator view styles */
+.generator-view {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.generator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.home-button {
+  padding: 8px 16px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.instructions {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* Explicit map container styles */
+.map-container {
+  height: 500px !important;
+  width: 100% !important;
+  position: relative !important;
+  display: block !important;
+  margin-bottom: 20px;
+  overflow: hidden !important;
+}
+
+/* Make sure all content is visible */
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-map-pane,
+.leaflet-tooltip,
+.leaflet-control {
+  position: absolute !important; 
+  visibility: visible !important;
+  display: block !important;
+  z-index: auto !important;
 }
