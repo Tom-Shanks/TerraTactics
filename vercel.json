@@ -10,7 +10,8 @@
   ],
   "github": {
     "enabled": true,
-    "silent": true
+    "silent": false,
+    "autoAlias": true
   },
   "headers": [
     {
