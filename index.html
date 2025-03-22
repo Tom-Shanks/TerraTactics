@@ -19,10 +19,22 @@
         height: 100% !important;
         width: 100% !important;
       }
+      /* Make Leaflet draw controls visible */
+      .leaflet-draw.leaflet-control {
+        z-index: 1000 !important;
+        display: block !important;
+      }
+      .leaflet-draw-toolbar {
+        display: block !important;
+        visibility: visible !important;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Add direct script includes for Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
   </body>
 </html>

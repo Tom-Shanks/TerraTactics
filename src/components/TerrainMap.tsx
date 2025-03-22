@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, FeatureGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, FeatureGroup, useMap } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
+
+// Import component styles
+import './TerrainMap.css';
 
 // Fix Leaflet's default icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -22,38 +25,51 @@ L.Icon.Default.mergeOptions({
   shadowUrl: iconShadow,
 });
 
+// Create a helper component to initialize map features after the map is ready
+const MapInitializer = ({ onMapReady }: { onMapReady: (map: L.Map) => void }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    onMapReady(map);
+  }, [map, onMapReady]);
+  
+  return null;
+};
+
 const TerrainMap: React.FC<TerrainMapProps> = ({ onAreaSelected }) => {
   const [map, setMap] = useState<L.Map | null>(null);
   const featureGroupRef = useRef<L.FeatureGroup | null>(null);
   
-  // Make sure Leaflet is initialized
-  useEffect(() => {
-    // Add a small delay to ensure the map renders properly
-    if (map) {
+  // Initialize the map
+  const handleMapReady = (mapInstance: L.Map) => {
+    console.log("Map is ready:", mapInstance);
+    setMap(mapInstance);
+    
+    // Force invalidate size to ensure the map renders correctly
+    setTimeout(() => {
+      mapInstance.invalidateSize();
+      
+      // Add a helper tooltip to show users how to use the drawing tools
+      const helpDiv = document.createElement('div');
+      helpDiv.style.position = 'absolute';
+      helpDiv.style.top = '70px';
+      helpDiv.style.left = '10px';
+      helpDiv.style.zIndex = '1000';
+      helpDiv.style.backgroundColor = 'white';
+      helpDiv.style.padding = '5px 10px';
+      helpDiv.style.borderRadius = '4px';
+      helpDiv.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
+      helpDiv.innerHTML = 'Click the rectangle icon <span style="font-size: 1.2em">▢</span> in the toolbar to draw an area';
+      
+      const mapContainer = mapInstance.getContainer();
+      mapContainer.appendChild(helpDiv);
+      
+      // Hide after 15 seconds
       setTimeout(() => {
-        map.invalidateSize();
-        
-        // Add a reminder message to use the drawing tools
-        const messageDiv = document.createElement('div');
-        messageDiv.style.position = 'absolute';
-        messageDiv.style.top = '10px';
-        messageDiv.style.left = '60px';
-        messageDiv.style.zIndex = '1000';
-        messageDiv.style.backgroundColor = 'white';
-        messageDiv.style.padding = '5px';
-        messageDiv.style.borderRadius = '5px';
-        messageDiv.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
-        messageDiv.innerHTML = 'Click the rectangle tool (▢) to start drawing';
-        
-        // Add to map container and remove after 10 seconds
-        const mapContainer = map.getContainer();
-        mapContainer.appendChild(messageDiv);
-        setTimeout(() => {
-          messageDiv.style.display = 'none';
-        }, 10000);
-      }, 500);
-    }
-  }, [map]);
+        helpDiv.style.display = 'none';
+      }, 15000);
+    }, 100);
+  };
   
   // Effect to handle map resizing
   useEffect(() => {
@@ -65,67 +81,78 @@ const TerrainMap: React.FC<TerrainMapProps> = ({ onAreaSelected }) => {
     
     window.addEventListener('resize', handleResize);
     
-    // Initial size invalidation after a short delay to ensure map is fully rendered
-    const initialResizeTimeout = setTimeout(() => {
-      map.invalidateSize();
-    }, 250);
-    
     return () => {
       window.removeEventListener('resize', handleResize);
-      clearTimeout(initialResizeTimeout);
     };
   }, [map]);
   
   // Handle the created event from Leaflet.Draw
   const handleCreated = (e: any) => {
-    const { layer } = e;
+    console.log("Shape created:", e);
+    const { layer, layerType } = e;
     
-    // Clear any existing layers
-    if (featureGroupRef.current) {
-      featureGroupRef.current.clearLayers();
-      featureGroupRef.current.addLayer(layer);
-    }
-    
-    // Get the bounds of the new shape and pass them to the parent component
-    if (layer.getBounds) {
-      const bounds = layer.getBounds();
-      onAreaSelected(bounds);
+    try {
+      // Clear any existing layers
+      if (featureGroupRef.current) {
+        featureGroupRef.current.clearLayers();
+        featureGroupRef.current.addLayer(layer);
+      }
+      
+      // Get the bounds of the new shape and pass them to the parent component
+      if (layer.getBounds) {
+        const bounds = layer.getBounds();
+        console.log("Bounds created:", bounds);
+        onAreaSelected(bounds);
+      } else {
+        console.error("Layer doesn't have getBounds method:", layer);
+      }
+    } catch (error) {
+      console.error("Error in handleCreated:", error);
     }
   };
   
   // Handle the edited event from Leaflet.Draw
   const handleEdited = (e: any) => {
-    const layers = e.layers;
-    let editedBounds = null;
-    
-    layers.eachLayer((layer: any) => {
-      if (layer.getBounds) {
-        editedBounds = layer.getBounds();
+    console.log("Shape edited:", e);
+    try {
+      const layers = e.layers;
+      let editedBounds = null;
+      
+      layers.eachLayer((layer: any) => {
+        if (layer.getBounds) {
+          editedBounds = layer.getBounds();
+        }
+      });
+      
+      if (editedBounds) {
+        console.log("Bounds updated:", editedBounds);
+        onAreaSelected(editedBounds);
       }
-    });
-    
-    if (editedBounds) {
-      onAreaSelected(editedBounds);
+    } catch (error) {
+      console.error("Error in handleEdited:", error);
     }
   };
   
   // Handle the deleted event from Leaflet.Draw
-  const handleDeleted = () => {
+  const handleDeleted = (e: any) => {
+    console.log("Shape deleted:", e);
     onAreaSelected(new L.LatLngBounds([0, 0], [0, 0]));
   };
   
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div className="map" style={{ width: '100%', height: '100%', position: 'relative' }}>
       <MapContainer
         center={[37.7749, -122.4194]}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
-        whenReady={(mapInstance: any) => setMap(mapInstance.target)}
       >
+        <MapInitializer onMapReady={handleMapReady} />
+        
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
         <FeatureGroup ref={(featureGroup: L.FeatureGroup | null) => {
           featureGroupRef.current = featureGroup;
         }}>
@@ -146,10 +173,6 @@ const TerrainMap: React.FC<TerrainMapProps> = ({ onAreaSelected }) => {
                   weight: 2
                 }
               }
-            }}
-            edit={{
-              featureGroup: featureGroupRef.current,
-              remove: true
             }}
           />
         </FeatureGroup>
