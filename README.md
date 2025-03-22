@@ -1,27 +1,46 @@
-# TerraTactics - Tabletop Terrain Map Generator
+# Tabletop Terrain Map Generator
 
-Create realistic topographic maps for your tabletop gaming from real-world locations.
+A web application for generating realistic 3D terrain maps for tabletop gaming using real-world elevation data.
 
-## Latest Updates (June 19, 2024)
-- Fixed map display and drawing tools issues
-- Improved Leaflet Draw implementation using react-leaflet
-- Fixed build issues for Vercel deployment
-- Streamlined component architecture
-- Enabled proper tool display in the terrain editor
+## Latest Updates (June 20, 2024)
+
+- Consolidated all development into the main branch
+- Fixed map display issues with Leaflet integration
+- Improved component structure and stylesheet organization
+- Created a dedicated SimpleMap component for better map handling
+- Enhanced application responsiveness across different screen sizes
 
 ## Features
-- Select any location on Earth and extract accurate elevation data
-- Generate contour lines with adjustable intervals
-- Overlay hex or square grids sized for popular game systems
-- Export high-quality maps in print-ready formats
+
+- Select any real-world location for your terrain map
+- Generate contour lines from elevation data
+- Add square or hex grids sized for your game system
+- Export high-quality printable maps
+
+## Development
+
+This project is built with:
+- React + TypeScript
+- Leaflet for interactive maps
+- AWS Terrain Tiles and USGS 3DEP for elevation data
 
 ## Getting Started
 
-1. Visit the application at [TerraTactics](https://terratactics.vercel.app/)
-2. Select "Start Creating Maps" to begin
-3. Use the rectangle tool to select an area on the map
-4. Generate elevation data and customize contour intervals
-5. Add a grid overlay and export your map
+```bash
+# Clone the repository
+git clone https://github.com/your-username/terrain-map-generator.git
+
+# Install dependencies
+cd terrain-map-generator
+npm install
+
+# Start development server
+npm run dev
+```
+
+## Deployment
+
+The application is deployed on Vercel. Changes pushed to the main branch are automatically deployed.
 
 ## Technical Details
 
