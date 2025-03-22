@@ -2,10 +2,12 @@
 
 Create realistic topographic maps for your tabletop gaming from real-world locations.
 
-## Latest Updates
+## Latest Updates (June 19, 2024)
+- Fixed map display and drawing tools issues
 - Improved Leaflet Draw implementation using react-leaflet
 - Fixed build issues for Vercel deployment
 - Streamlined component architecture
+- Enabled proper tool display in the terrain editor
 
 ## Features
 - Select any location on Earth and extract accurate elevation data
