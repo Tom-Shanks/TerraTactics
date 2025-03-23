@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet-draw';
 import '../styles/SimpleMap.css';
 import { Bounds } from '../types';
+import { fixLeafletIcons } from '../utils/leafletIconFix';
 
 // Make sure Leaflet's default icons work
 L.Icon.Default.mergeOptions({
@@ -23,6 +24,9 @@ const SimpleMap: React.FC<SimpleMapProps> = ({ onAreaSelected }) => {
   useEffect(() => {
     // Log when component mounts
     console.log('SimpleMap component mounting');
+    
+    // Apply icon fixes for production environment
+    fixLeafletIcons();
     
     // Check if Leaflet is available
     if (!L) {

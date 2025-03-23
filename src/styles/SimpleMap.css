@@ -3,12 +3,13 @@
   width: 100%;
   height: 500px;
   border: 1px solid #ccc;
-  overflow: visible;
+  overflow: visible !important;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   margin: 20px 0;
   padding-top: 40px;
   padding-left: 10px;
+  z-index: 1;
 }
 
 .leaflet-map {
@@ -20,19 +21,22 @@
 /* Ensure the map tiles are visible */
 .leaflet-tile-container {
   visibility: visible !important;
+  z-index: auto !important;
 }
 
 /* Make sure all map controls are visible and properly styled */
 .leaflet-control-container {
   visibility: visible !important;
-  z-index: 800;
+  z-index: 800 !important;
+  display: block !important;
+  position: absolute !important;
 }
 
 .leaflet-draw.leaflet-control {
   display: block !important;
   visibility: visible !important;
   margin-top: 10px;
-  z-index: 1000;
+  z-index: 1000 !important;
 }
 
 .leaflet-draw-toolbar {
@@ -59,6 +63,21 @@
   visibility: visible !important;
   white-space: nowrap;
   z-index: 9999 !important;
+}
+
+/* Force map controls to be visible in all environments */
+.leaflet-bar a, 
+.leaflet-bar a:hover,
+.leaflet-draw-toolbar a {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Fix Leaflet draw toolbar icon positions */
+.leaflet-draw-toolbar a {
+  background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg') !important;
+  background-repeat: no-repeat !important;
+  background-size: 270px 30px !important;
 }
 
 /* Ensure proper positioning of controls */

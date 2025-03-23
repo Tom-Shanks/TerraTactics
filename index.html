@@ -46,6 +46,7 @@
       .leaflet-draw-actions {
         visibility: visible !important;
         display: block !important;
+        z-index: auto !important;
       }
       
       /* Ensure draw toolbar is visible */
@@ -53,6 +54,7 @@
         z-index: 1000 !important;
         margin-top: 10px !important;
         margin-left: 10px !important;
+        display: block !important;
       }
       
       /* Fix control positioning */
@@ -64,6 +66,13 @@
       .leaflet-top.leaflet-left {
         top: 10px !important;
         left: 10px !important;
+      }
+      
+      /* Fix Leaflet Draw toolbar icons */
+      .leaflet-draw-toolbar a {
+        background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg') !important;
+        background-repeat: no-repeat !important;
+        background-size: 270px 30px !important;
       }
     </style>
     
