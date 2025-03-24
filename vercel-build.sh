@@ -1,4 +1,5 @@
 #!/bin/bash
+# Make this script executable: chmod +x vercel-build.sh
 
 # Custom build script for Vercel deployments
 echo "Starting custom build process..."
