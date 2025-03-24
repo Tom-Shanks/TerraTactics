@@ -5,7 +5,7 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
+        "buildCommand": "npx tsc --emitOnError false && vite build",
         "outputDirectory": "dist"
       }
     }

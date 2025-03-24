@@ -74,6 +74,19 @@
         background-repeat: no-repeat !important;
         background-size: 270px 30px !important;
       }
+      
+      /* Fix specific icon positions in the toolbar */
+      .leaflet-draw-toolbar .leaflet-draw-draw-rectangle {
+        background-position: -2px -2px !important;
+      }
+      
+      .leaflet-draw-toolbar .leaflet-draw-edit-edit {
+        background-position: -31px -2px !important;
+      }
+      
+      .leaflet-draw-toolbar .leaflet-draw-edit-remove {
+        background-position: -60px -2px !important;
+      }
     </style>
     
     <!-- Leaflet Scripts (load before React) -->
@@ -90,6 +103,10 @@
       window.addEventListener('DOMContentLoaded', function() {
         if (window.L) {
           console.log("Setting Leaflet icon paths");
+          // Delete the default icon URL getter
+          delete (L.Icon.Default.prototype)._getIconUrl;
+          
+          // Set absolute URLs for icons
           L.Icon.Default.mergeOptions({
             iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
             iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',

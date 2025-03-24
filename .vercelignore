@@ -3,5 +3,14 @@
 .github
 .vscode
 *.log
-node_modules
-dist 
+
+# Keep node_modules and dist for vercel build
+# node_modules
+# dist
+
+# Development files that aren't needed
+coverage
+*.test.*
+jest.config.*
+.eslintrc.*
+.prettierrc.* 

@@ -15,25 +15,34 @@ export function fixLeafletIcons() {
   // Add Leaflet Draw icon fixes
   const leafletStyles = document.createElement('style');
   leafletStyles.textContent = `
+    /* Fix Leaflet Draw toolbar icons */
+    .leaflet-draw-toolbar a {
+      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg') !important;
+      background-repeat: no-repeat !important;
+      background-size: 270px 30px !important;
+    }
+    
     .leaflet-draw-toolbar .leaflet-draw-draw-rectangle {
-      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg');
-      background-repeat: no-repeat;
-      background-size: 270px 30px;
-      background-position: -2px -2px;
+      background-position: -2px -2px !important;
     }
     
     .leaflet-draw-toolbar .leaflet-draw-edit-edit {
-      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg');
-      background-repeat: no-repeat;
-      background-size: 270px 30px;
-      background-position: -31px -2px;
+      background-position: -31px -2px !important;
     }
     
     .leaflet-draw-toolbar .leaflet-draw-edit-remove {
-      background-image: url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg');
-      background-repeat: no-repeat;
-      background-size: 270px 30px;
-      background-position: -60px -2px;
+      background-position: -60px -2px !important;
+    }
+    
+    /* Ensure map controls are visible */
+    .leaflet-control-container,
+    .leaflet-draw.leaflet-control,
+    .leaflet-draw-toolbar,
+    .leaflet-draw-actions,
+    .leaflet-draw-toolbar a {
+      display: block !important;
+      visibility: visible !important;
+      z-index: 1000 !important;
     }
   `;
   document.head.appendChild(leafletStyles);
