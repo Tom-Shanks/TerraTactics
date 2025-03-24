@@ -6,7 +6,8 @@ import { Bounds } from './types';
 function App() {
   const [view, setView] = useState<'landing' | 'generator'>('generator');
   const [selectedArea, setSelectedArea] = useState<Bounds | null>(null);
-  const [elevationData, setElevationData] = useState(null);
+  // Declare but don't use these variables yet (commented out to avoid TS warnings)
+  // const [elevationData, setElevationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +23,7 @@ function App() {
     // Reset data when switching to landing view
     if (newView === 'landing') {
       setSelectedArea(null);
-      setElevationData(null);
+      // setElevationData(null);
     }
   };
 

@@ -15,6 +15,10 @@ type ContourPolygon = ContourPath[];
 export interface ContourLine {
   elevation: number;
   coordinates: number[][][]; // Array of rings, each with points, each with [lng, lat]
+  // Add missing properties referenced in RenderService
+  isMajor?: boolean;
+  path?: any; // Using any for now, but should be properly typed in a real project
+  level?: number;
 }
 
 class ContourService {
@@ -91,7 +95,10 @@ class ContourService {
       if (contourCoordinates.length > 0) {
         contours.push({
           elevation: threshold,
-          coordinates: contourCoordinates
+          coordinates: contourCoordinates,
+          // Add isMajor and level properties
+          isMajor: threshold % (interval * 5) === 0,
+          level: threshold
         });
       }
     });
@@ -157,4 +164,5 @@ class ContourService {
 }
 
 export default new ContourService();
-export type { ContourLine, ContourPoint }; 
+// Fix the export to avoid conflicts
+export type { ContourPoint }; 

@@ -1,9 +1,10 @@
-import { Bounds, GridType, GameSystem } from '../types';
+import { Bounds, GridType, GameSystem, GAME_SYSTEM_PRESETS } from '../types';
 
 export interface GridCell {
   id: string;
   coordinates: number[][]; // Array of [lng, lat] points forming the cell
   center: [number, number]; // [lng, lat] of center point
+  points?: [number, number][];
 }
 
 interface GridConfig {
@@ -99,10 +100,14 @@ class GridService {
         const centerLng = (cellWest + cellEast) / 2;
         const centerLat = (cellNorth + cellSouth) / 2;
         
+        // Create points array for RenderService
+        const points: [number, number][] = coordinates.map(coord => [coord[0], coord[1]]);
+        
         grid.push({
           id: `square-${x}-${y}`,
           coordinates,
-          center: [centerLng, centerLat]
+          center: [centerLng, centerLat],
+          points
         });
       }
     }
@@ -142,9 +147,6 @@ class GridService {
     const hexWidth = hexRadius * 2;
     const hexHeight = hexRadius * Math.sqrt(3);
     
-    const hexWidthLng = hexWidth * lngDegreePerMeter;
-    const hexHeightLat = hexHeight * latDegreePerMeter;
-    
     // Horizontal spacing between hex centers
     const hexHorizSpacing = hexRadius * 1.5 * lngDegreePerMeter;
     
@@ -155,7 +157,7 @@ class GridService {
       
       for (let col = 0; col < cellsX; col++) {
         const centerLng = west + rowOffset + col * hexHorizSpacing;
-        const centerLat = north - (row * hexHeightLat);
+        const centerLat = north - (row * hexHeight * latDegreePerMeter);
         
         // Generate the six points of the hexagon
         const coordinates: number[][] = [];
@@ -170,10 +172,14 @@ class GridService {
         // Close the polygon
         coordinates.push(coordinates[0]);
         
+        // Create points array for RenderService
+        const points: [number, number][] = coordinates.map(coord => [coord[0], coord[1]]);
+        
         grid.push({
           id: `hex-${col}-${row}`,
           coordinates,
-          center: [centerLng, centerLat]
+          center: [centerLng, centerLat],
+          points
         });
       }
     }
@@ -235,10 +241,13 @@ class GridService {
    * @returns Grid configuration
    */
   createGridConfig(gameSystem: GameSystem, showLabels: boolean = true): GridConfig {
+    // Get the game system configuration from presets
+    const config = GAME_SYSTEM_PRESETS[gameSystem];
+
     return {
-      type: gameSystem.defaultGridType,
-      gridSize: gameSystem.gridSize,
-      scaleRatio: gameSystem.scaleRatio,
+      type: config.gridType,
+      gridSize: config.gridSize,
+      scaleRatio: config.scaleRatio,
       showLabels,
       labelCharset: 'alphanumeric'
     };
@@ -246,4 +255,4 @@ class GridService {
 }
 
 export default new GridService();
-export type { GridCell, GridConfig }; 
+export type { GridConfig }; 

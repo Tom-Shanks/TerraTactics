@@ -1,13 +1,14 @@
 import { jsPDF } from 'jspdf';
-import { Bounds, ExportFormat, ExportOptions } from '../types';
+import { Bounds, ExportFormat } from '../types';
 import { ContourLine } from './ContourService';
 import { GridCell } from './GridService';
-import RenderService, { RenderOptions } from './RenderService';
+import RenderService from './RenderService';
 
-interface ExportOptions {
+// Define export options locally instead of importing from types.ts
+interface ExportServiceOptions {
   filename: string;
   format: 'pdf' | 'png';
-  paperSize: 'a4' | 'letter' | 'a3' | 'tabloid' | 'custom';
+  paperSize: 'a4' | 'letter' | 'a3' | 'tabloid' | 'legal' | 'custom';
   customWidth?: number; // in mm, for custom paper size
   customHeight?: number; // in mm, for custom paper size
   orientation: 'portrait' | 'landscape';
@@ -18,7 +19,7 @@ interface ExportOptions {
 
 class ExportService {
   // Default export options
-  defaultOptions: ExportOptions = {
+  defaultOptions: ExportServiceOptions = {
     filename: 'terrain-map',
     format: 'pdf',
     paperSize: 'a4',
@@ -40,8 +41,7 @@ class ExportService {
     bounds: Bounds, 
     contours: ContourLine[],
     grid: GridCell[],
-    renderOptions: any = {},
-    exportOptions: ExportOptions
+    exportOptions: ExportServiceOptions
   ): Promise<string> {
     console.log('Exporting map with format:', exportOptions.format);
     
@@ -56,24 +56,43 @@ class ExportService {
     // Set canvas dimensions based on paper size and DPI
     const { paperSize, orientation, dpi } = exportOptions;
     
-    // Standard paper sizes in inches
-    const paperSizes = {
-      'a4': { width: 8.27, height: 11.69 },
-      'letter': { width: 8.5, height: 11 },
-      'legal': { width: 8.5, height: 14 }
+    // Standard paper sizes in mm
+    const paperSizes: Record<string, { width: number; height: number }> = {
+      'a4': { width: 210, height: 297 },
+      'letter': { width: 216, height: 279 },
+      'legal': { width: 216, height: 356 },
+      'a3': { width: 297, height: 420 },
+      'tabloid': { width: 279, height: 432 }
     };
     
     // Set dimensions based on orientation
-    let paperWidth = paperSizes[paperSize].width;
-    let paperHeight = paperSizes[paperSize].height;
+    let paperWidth: number;
+    let paperHeight: number;
+    
+    if (paperSize === 'custom' && exportOptions.customWidth && exportOptions.customHeight) {
+      paperWidth = exportOptions.customWidth;
+      paperHeight = exportOptions.customHeight;
+    } else if (paperSizes[paperSize]) {
+      paperWidth = paperSizes[paperSize].width;
+      paperHeight = paperSizes[paperSize].height;
+    } else {
+      // Default to A4 if paper size not found
+      paperWidth = paperSizes['a4'].width;
+      paperHeight = paperSizes['a4'].height;
+    }
     
     if (orientation === 'landscape') {
       [paperWidth, paperHeight] = [paperHeight, paperWidth];
     }
     
+    // Convert mm to inches
+    const mmToInches = 0.0393701;
+    const paperWidthInches = paperWidth * mmToInches;
+    const paperHeightInches = paperHeight * mmToInches;
+    
     // Convert to pixels based on DPI
-    const canvasWidth = Math.round(paperWidth * dpi);
-    const canvasHeight = Math.round(paperHeight * dpi);
+    const canvasWidth = Math.round(paperWidthInches * dpi);
+    const canvasHeight = Math.round(paperHeightInches * dpi);
     
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -218,7 +237,7 @@ class ExportService {
     
     // Convert canvas to blob and create URL
     return new Promise<string>((resolve, reject) => {
-      if (exportOptions.format === ExportFormat.PNG) {
+      if (exportOptions.format === 'png') {
         try {
           // Export as PNG
           canvas.toBlob(blob => {
@@ -287,30 +306,23 @@ class ExportService {
     
     return distance;
   }
-
+  
   /**
-   * Create a download link for a file URL
-   * @param url The URL of the file
-   * @param filename The filename
-   * @returns An anchor element that triggers the download
+   * Create a download link for an exported file
+   * @param url URL to the exported file
+   * @param filename Name to use for the download
+   * @returns HTML anchor element
    */
   createDownloadLink(url: string, filename: string): HTMLAnchorElement {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
-    link.textContent = 'Download Map';
-    link.style.display = 'inline-block';
-    link.style.padding = '10px 15px';
-    link.style.backgroundColor = '#4caf50';
-    link.style.color = 'white';
-    link.style.textDecoration = 'none';
-    link.style.borderRadius = '4px';
-    link.style.cursor = 'pointer';
-    link.style.fontSize = '16px';
-    
+    link.textContent = `Download ${filename}`;
+    link.style.display = 'block';
+    link.style.marginTop = '10px';
     return link;
   }
 }
 
 export default new ExportService();
-export type { ExportOptions }; 
+export type { ExportServiceOptions as ExportOptions }; 
