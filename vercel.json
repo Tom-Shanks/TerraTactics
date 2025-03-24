@@ -6,11 +6,14 @@
       "use": "@vercel/static-build",
       "config": {
         "buildCommand": "bash ./vercel-build.sh",
-        "outputDirectory": "dist"
+        "outputDirectory": "dist",
+        "buildId": "refresh-deployment-20240623"
       }
     }
   ],
   "routes": [
+    { "src": "^/vercel-test", "dest": "/vercel-test.html" },
+    { "src": "^/deployment-test", "dest": "/vercel-test.html" },
     { "src": "^/assets/(.*)", "dest": "/assets/$1" },
     { "src": "^/images/(.*)", "dest": "/images/$1" },
     { "src": "^/favicon.ico", "dest": "/favicon.ico" },
