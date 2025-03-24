@@ -4,13 +4,24 @@
 .vscode
 *.log
 
-# Keep node_modules and dist for vercel build
+# Test files and data
+test
+tests
+*.test.js
+*.test.ts
+*.test.tsx
+cypress
+
+# Keep build-related files and scripts
 # node_modules
 # dist
+# public
+# src 
+# Don't exclude any source files
 
 # Development files that aren't needed
 coverage
-*.test.*
-jest.config.*
-.eslintrc.*
-.prettierrc.* 
+.eslintcache
+.DS_Store
+.env.local
+.env.development 

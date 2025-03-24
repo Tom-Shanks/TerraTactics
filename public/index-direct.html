@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TerraTactics Direct Access</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 { color: #0070f3; }
+    h2 { color: #0366d6; }
+    .card {
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      background-color: #f6f8fa;
+    }
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .primary-btn {
+      display: inline-block;
+      background-color: #0070f3;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>TerraTactics Map Generator</h1>
+  <div class="card">
+    <h2>Direct Access Page</h2>
+    <p>This page loads directly from the public directory, bypassing the build process.</p>
+    <p>If you can see this page but not the main application, the issue is likely in the build configuration.</p>
+  </div>
+
+  <div class="card success">
+    <h2>Deployment Information</h2>
+    <p><strong>Static File Test:</strong> This file proves static serving is working correctly.</p>
+    <p><strong>Build ID:</strong> refresh-deployment-20240623</p>
+    <a href="/" class="primary-btn">Try Main Application</a>
+  </div>
+
+  <div class="card warning">
+    <h2>Common Issues</h2>
+    <ul>
+      <li>TypeScript build errors</li>
+      <li>Missing Leaflet assets</li>
+      <li>Incorrect build commands</li>
+      <li>Permissions issues with shell scripts</li>
+    </ul>
+  </div>
+
+  <script>
+    // Display some basic environment info
+    document.addEventListener('DOMContentLoaded', function() {
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'card';
+      infoDiv.innerHTML = `
+        <h2>Browser Information</h2>
+        <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+        <p><strong>Window Size:</strong> ${window.innerWidth}x${window.innerHeight}</p>
+        <p><strong>URL:</strong> ${window.location.href}</p>
+      `;
+      document.body.appendChild(infoDiv);
+    });
+  </script>
+</body>
+</html> 

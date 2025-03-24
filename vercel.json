@@ -5,13 +5,15 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "bash ./vercel-build.sh",
+        "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
         "outputDirectory": "dist",
-        "buildId": "refresh-deployment-20240623"
+        "buildId": "refresh-deployment-20240624",
+        "installCommand": "npm install --no-audit"
       }
     }
   ],
   "routes": [
+    { "src": "^/direct", "dest": "/index-direct.html" },
     { "src": "^/vercel-test", "dest": "/vercel-test.html" },
     { "src": "^/deployment-test", "dest": "/vercel-test.html" },
     { "src": "^/assets/(.*)", "dest": "/assets/$1" },
@@ -54,6 +56,7 @@
     }
   ],
   "github": {
-    "silent": true
+    "silent": true,
+    "autoJobCancelation": true
   }
 } 
