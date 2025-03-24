@@ -1,7 +1,14 @@
 {
   "version": 2,
   "builds": [
-    { "src": "package.json", "use": "@vercel/static-build" }
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
+        "outputDirectory": "dist"
+      }
+    }
   ],
   "routes": [
     { "src": "^/assets/(.*)", "dest": "/assets/$1" },
@@ -10,7 +17,38 @@
     { "src": "^/robots.txt", "dest": "/robots.txt" },
     { "src": "^/(.*).png", "dest": "/$1.png" },
     { "src": "^/(.*).svg", "dest": "/$1.svg" },
+    { "src": "^/vite.svg", "dest": "/vite.svg" },
+    { "src": "^/leaflet/(.*)", "dest": "https://unpkg.com/leaflet@1.9.4/dist/$1" },
+    { "src": "^/leaflet-draw/(.*)", "dest": "https://unpkg.com/leaflet-draw@1.0.4/dist/$1" },
     { "src": ".*", "dest": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*).(js|css|png|jpg|svg|ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
   ],
   "github": {
     "silent": true
