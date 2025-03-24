@@ -10,6 +10,8 @@ A web application for generating realistic 3D terrain maps for tabletop gaming u
 - Improved component structure and stylesheet organization
 - Created a dedicated SimpleMap component for better map handling
 - Enhanced application responsiveness across different screen sizes
+- Optimized Vercel deployment with custom build script
+- Fixed Leaflet and Leaflet Draw icon visibility in production
 
 ## Features
 
@@ -44,6 +46,21 @@ npm run dev
 ## Deployment
 
 The application is deployed on Vercel. Changes pushed to the main branch are automatically deployed.
+
+### Vercel Deployment Notes
+
+The application uses a custom build process for Vercel to handle TypeScript errors and ensure proper asset loading:
+
+- Custom `vercel-build.sh` script to handle TypeScript errors gracefully
+- Modified `vercel.json` with routes configuration for Leaflet assets
+- CDN references for Leaflet icons to ensure cross-platform compatibility
+- Custom headers for optimal caching and security
+
+If you encounter issues with Leaflet icons not appearing in production:
+
+1. Check browser console for 404 errors related to icon paths
+2. Verify that the CSS and JS imports for Leaflet are in the correct order
+3. Use utility function `fixLeafletIcons()` to explicitly set icon paths
 
 ## Technical Details
 
@@ -86,13 +103,20 @@ npm run build
 npm run preview
 ```
 
-## Deployment
+## Troubleshooting
 
-The application is configured for easy deployment to Vercel:
+### Missing Map Controls
 
-1. Fork or clone this repository
-2. Connect it to your Vercel account
-3. Deploy with default settings (the vercel.json file handles the configuration)
+If map controls are not visible:
+- Check browser console for errors
+- Verify that both Leaflet and Leaflet Draw CSS are properly loaded 
+- Ensure z-index values allow controls to be displayed above other elements
+
+### TypeScript Build Errors
+
+The project uses a custom TypeScript configuration that:
+- Sets `noUnusedLocals` and `noUnusedParameters` to `false` to allow development flexibility
+- Uses `--emitOnError false` during build to prevent TypeScript warnings from failing builds
 
 ## Technologies Used
 
