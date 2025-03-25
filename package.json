@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --emitOnError false && vite build",
-    "vercel-build": "vite build",
+    "build": "tsc --noEmitOnError false && vite build",
+    "vercel-build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

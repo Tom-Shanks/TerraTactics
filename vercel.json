@@ -5,10 +5,10 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
+        "buildCommand": "npm run vercel-build",
         "outputDirectory": "dist",
-        "buildId": "refresh-deployment-20240624",
-        "installCommand": "npm install --no-audit"
+        "buildId": "refresh-deployment-20240624-fix",
+        "installCommand": "npm install"
       }
     }
   ],

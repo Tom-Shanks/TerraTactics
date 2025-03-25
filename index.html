@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Generate contour maps for tabletop gaming from real-world terrain data" />
-    <meta name="build-id" content="refresh-deployment-20240624" />
+    <meta name="build-id" content="refresh-deployment-20240624-fix" />
     <title>Tabletop Terrain Map Generator</title>
     
     <!-- Leaflet CSS -->
@@ -131,7 +131,7 @@
           const buildInfo = document.createElement('div');
           buildInfo.id = 'build-info';
           buildInfo.innerHTML = `
-            Build: refresh-deployment-20240624<br>
+            Build: refresh-deployment-20240624-fix<br>
             Leaflet: ${window.L ? '✓' : '✗'}<br>
             Draw: ${window.L && L.Control.Draw ? '✓' : '✗'}
           `;
